@@ -1,7 +1,7 @@
 from typing import List
 
 import graphene
-from starlette.graphql import GraphQLApp
+from starlette.graphql import GraphQLApp, GraphQLError
 from pypale import Pypale
 from fastapi import Depends, FastAPI, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -41,30 +41,32 @@ async def authenticate(token: str):
         raise HTTPException(status_code=401, detail="Forbidden")
 
 
-@app.post("/users/", response_model=schemas.UserCreate)
-def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    token = pypale.generate_token(user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    user = crud.create_user(db=db, user=user)
-    user.token = token
-    return user
+class CreateUser(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
 
+    ok = graphene.Boolean()
+    token = graphene.String()
 
-@app.get("/users/{user_id}", response_model=schemas.User)
-async def read_user(user_id: int, db: Session = Depends(get_db), token = Header(None)):
-    db_user = crud.get_user(db, user_id=user_id)
-    valid = await authenticate(token)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+    @staticmethod
+    def mutate(root, info, email):
+        db = SessionLocal()
+        db_user = crud.get_user_by_email(db, email=email)
+        token = pypale.generate_token(email)
+        if db_user:
+            return GraphQLError("Email already registered")
+        user = crud.create_user(db=db, user=schemas.UserBase(email=email))
+        user.token = token
+        return CreateUser(token=token, ok=True)
 
 
 class Query(graphene.ObjectType):
-    hello = graphene.String(name=graphene.String(default_value="stranger"))
+    get_lines = graphene.String(name=graphene.String(default_value="noop"))
 
-    def resolve_hello(self, info, name):
-        return "Hello " + name
+    def resolve_hello(self, info):
+        return "Noop"
 
-app.add_route("/graphql", GraphQLApp(schema=graphene.Schema(query=Query)))
+class Mutations(graphene.ObjectType):
+    create_user = CreateUser.Field()
+
+app.add_route("/graphql", GraphQLApp(schema=graphene.Schema(query=Query, mutation=Mutations)))
