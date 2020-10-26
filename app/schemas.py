@@ -1,6 +1,9 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from graphene_sqlalchemy import SQLAlchemyObjectType
+
+from . import models
 
 class Line(BaseModel):
     id: int
@@ -33,7 +36,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    email: str
+    email: EmailStr
     token: str
 
     class Config:
@@ -50,4 +53,7 @@ class User(UserBase):
         orm_mode = True
 
 
+class UserSchema(SQLAlchemyObjectType):
+    class Meta:
+        model = models.User
 
