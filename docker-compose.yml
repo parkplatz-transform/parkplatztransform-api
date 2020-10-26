@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  postgres:
+    restart: always
+    container_name: "postgres"
+    image: postgis/postgis
+    ports:
+      - "54320:5432"
+    env_file:
+      - .env
+  app:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "8023:80"
+    volumes:
+      - .:/app
