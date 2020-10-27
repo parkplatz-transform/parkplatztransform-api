@@ -5,12 +5,13 @@ from graphene_sqlalchemy import SQLAlchemyObjectType
 
 from . import models
 
+
 class Line(BaseModel):
     id: int
 
     created_at: str
     modified_at: str
-    
+
     user_id: int
     line: str
 
@@ -23,7 +24,7 @@ class Area(BaseModel):
 
     created_at: str
     modified_at: str
-    
+
     user_id: int
     area: str
 
@@ -45,15 +46,10 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    
+
     lines: List[Line] = []
     areas: List[Area] = []
 
     class Config:
         orm_mode = True
-
-
-class UserSchema(SQLAlchemyObjectType):
-    class Meta:
-        model = models.User
 

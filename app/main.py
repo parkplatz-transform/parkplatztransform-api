@@ -2,12 +2,13 @@ from typing import List
 
 import graphene
 from starlette.graphql import GraphQLApp, GraphQLError
-from pypale import Pypale
 from fastapi import Depends, FastAPI, HTTPException, Header
 from sqlalchemy.orm import Session
 from email_validator import validate_email, EmailNotValidError
 
+from .pypale import Pypale
 from . import crud, models, schemas, strings
+from .email_service import send_verification
 from .database import SessionLocal, engine
 from config import get_settings
 
@@ -20,8 +21,8 @@ settings = get_settings()
 pypale = Pypale(
     base_url=settings.base_url,
     secret_key=settings.secret_key,
-    token_ttl_minutes=settings.token_ttl_minutes,
-    token_issue_ttl_seconds=settings.token_issue_ttl_seconds
+    token_ttl_minutes=int(settings.token_ttl_minutes),
+    token_issue_ttl_seconds=int(settings.token_issue_ttl_seconds),
 )
 
 # Dependency
@@ -47,23 +48,24 @@ class CreateUser(graphene.Mutation):
     """
     Token should eventually be delivered via email
     """
-    token = graphene.String()
+    # token = graphene.String()
 
     @staticmethod
     def mutate(root, info, email):
         try:
-          valid = validate_email(email)
-          email = valid.email
+            valid = validate_email(email)
+            email = valid.email
         except EmailNotValidError as e:
             raise GraphQLError(str(e))
         db = SessionLocal()
         db_user = crud.get_user_by_email(db, email=email)
         if db_user:
-            raise GraphQLError(strings.validation['email_in_use'])
+            raise GraphQLError(strings.validation["email_in_use"])
         token = pypale.generate_token(email)
-        user = crud.create_user(db=db, user=schemas.UserBase(email=email))
-        user.token = token
-        return CreateUser(token=token, ok=True)
+
+        # user = crud.create_user(db=db, user=schemas.UserBase(email=email))
+        send_verification(email, token)
+        return CreateUser(ok=True)
 
 
 class Query(graphene.ObjectType):
@@ -77,4 +79,5 @@ class Mutations(graphene.ObjectType):
     create_user = CreateUser.Field()
 
 
-app.add_route("/", GraphQLApp(schema=graphene.Schema(query=Query, mutation=Mutations)))
+graphql_app = GraphQLApp(schema=graphene.Schema(query=Query, mutation=Mutations))
+app.add_route("/", graphql_app)
