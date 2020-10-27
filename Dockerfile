@@ -9,3 +9,4 @@ RUN \
 
 COPY ./app /app
 
+CMD /start-reload.sh

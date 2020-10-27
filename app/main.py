@@ -77,4 +77,4 @@ class Mutations(graphene.ObjectType):
     create_user = CreateUser.Field()
 
 
-app.add_route("/graphql", GraphQLApp(schema=graphene.Schema(query=Query, mutation=Mutations)))
+app.add_route("/", GraphQLApp(schema=graphene.Schema(query=Query, mutation=Mutations)))
