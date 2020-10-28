@@ -3,8 +3,7 @@ import enum
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, Enum
 from sqlalchemy.orm import relationship
 
-from ..database import Base
-from .base_mixin import BaseMixin
+from .base_mixin import BaseMixin, Base
 
 
 class Alignment(enum.Enum):
@@ -37,5 +36,3 @@ class Segment(BaseMixin, Base):
 
     recording_id = Column(Integer, ForeignKey("recordings.id"))
     recording = relationship("Recording", back_populates="segments")
-
-

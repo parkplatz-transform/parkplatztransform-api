@@ -2,10 +2,9 @@ from fastapi import Depends, FastAPI, HTTPException, Header
 
 from .pypale import Pypale
 from . import models, strings
-from .database import SessionLocal, engine
+from .database import SessionLocal
 from .config import get_settings
 
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

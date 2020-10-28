@@ -1,8 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from ..database import Base
-from .base_mixin import BaseMixin
+from .base_mixin import BaseMixin, Base
 
 
 class User(BaseMixin, Base):
