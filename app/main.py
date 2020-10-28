@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -38,13 +38,13 @@ async def verify_token(token: HTTPAuthorizationCredentials = Depends(bearer_sche
 
 
 @app.post("/users/", response_model=schemas.UserCreate)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     token = pypale.generate_token(user.email)
     if db_user:
         raise HTTPException(status_code=400, detail=strings.validation["email_in_use"])
     user = crud.create_user(db=db, user=user)
-    email_service.send_verification(user.email, token)
+    background_tasks.add_task(email_service.send_email_verification_link, user.email, token)
     return user
 
 
