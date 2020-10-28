@@ -1,4 +1,5 @@
-from fastapi import Depends, FastAPI, HTTPException, Header
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from .pypale import Pypale
@@ -27,26 +28,30 @@ def get_db():
         db.close()
 
 
-async def verify_token(token: str):
-    valid = pypale.valid_token(token)
+bearer_scheme = HTTPBearer()
+
+
+async def verify_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    valid = pypale.valid_token(token.credentials)
     if not valid:
-        raise HTTPException(401, strings.validation["forbidden"])
+        raise HTTPException(401, strings.validation["unauthorized"])
 
 
 @app.post("/users/", response_model=schemas.UserCreate)
-def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     token = pypale.generate_token(user.email)
+    print(token)
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail=strings.validation["email_in_use"])
     user = crud.create_user(db=db, user=user)
-    user.token = token
     return user
 
 
-@app.get("/users/{user_id}", response_model=schemas.User, dependencies=[Depends(verify_token)])
-async def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
+@app.get("/users/me", response_model=schemas.UserCreate, dependencies=[Depends(verify_token)])
+async def read_user(db: Session = Depends(get_db), token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    decoded = pypale.get_decoded_token(return_token=token.credentials)
+    db_user = crud.get_user_by_email(db, email=decoded["email"])
     if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=strings.validation["user_not_found"])
     return db_user

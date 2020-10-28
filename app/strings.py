@@ -1,4 +1,5 @@
 validation = {
     "email_in_use": "Email already registered",
-    "forbidden": "Forbidden"
+    "forbidden": "Forbidden",
+    "user_not_found": "User not found"
 }

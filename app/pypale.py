@@ -5,6 +5,7 @@ import string
 import time
 
 import jwt
+from typing import Optional
 
 
 class Pypale:
@@ -39,19 +40,30 @@ class Pypale:
             chars=string.ascii_letters + string.digits + "-") -> str:
         return "".join(random.choice(chars) for _ in range(size))
 
+    def get_decoded_token(self, return_token: str) -> Optional[dict]:
+        try:
+            decoded_return_token = base64.b64decode(return_token).decode(self.ENCODING)
+            token_metadata = jwt.decode(
+                decoded_return_token,
+                self.secret_key,
+                algorithms=[self.JWT_ALGORITHM]
+            )
+            return {
+                "email": token_metadata["sub"],
+                "ttl": token_metadata["iat"]
+            }
+        except Exception as e:
+            return None
+
     def valid_token(self, return_token: str, return_email: str = "") -> bool:
         try:
-            decoded_return_token = base64.b64decode(return_token).decode(
-                self.ENCODING)
-            token_metadata = jwt.decode(decoded_return_token,
-                                        self.secret_key,
-                                        algorithms=[self.JWT_ALGORITHM])
-            if (token_metadata["iat"] + self.token_issue_ttl_seconds) < int(
+            decoded_token = self.get_decoded_token(return_token=return_token)
+            if (decoded_token["ttl"] + self.token_issue_ttl_seconds) < int(
                     time.time()):
                 logging.warning("Token was issued too long ago.")
                 return False
             elif return_email != "":
-                if token_metadata["sub"] != return_email:
+                if decoded_token["email"] != return_email:
                     logging.warning("Token is not issued to the right user.")
                     return False
                 return True
