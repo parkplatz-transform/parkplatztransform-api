@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     base_url: str = "localhost:8023"
     mailgun_api_key: str
     mailgun_domain: str
+
     class Config:
         env_file = ".env"
 

@@ -1,1 +1,4 @@
-validation = {"email_in_use": "Email already registered", "forbidden": "Forbidden"}
+validation = {
+    "email_in_use": "Email already registered",
+    "forbidden": "Forbidden"
+}

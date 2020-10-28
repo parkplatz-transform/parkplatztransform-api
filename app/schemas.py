@@ -1,12 +1,9 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, EmailStr
-from graphene_sqlalchemy import SQLAlchemyObjectType
-
-from . import models
 
 
-class Line(BaseModel):
+class Segment(BaseModel):
     id: int
 
     created_at: str
@@ -19,7 +16,7 @@ class Line(BaseModel):
         orm_mode = True
 
 
-class Area(BaseModel):
+class Shape(BaseModel):
     id: int
 
     created_at: str
@@ -47,8 +44,8 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
 
-    lines: List[Line] = []
-    areas: List[Area] = []
+    segments: List[Segment] = []
+    shapes: List[Shape] = []
 
     class Config:
         orm_mode = True

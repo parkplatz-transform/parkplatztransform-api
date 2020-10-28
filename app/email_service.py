@@ -1,10 +1,9 @@
 import smtplib
 
-from fastapi import BackgroundTasks, FastAPI
-from email.mime.text import MIMEText
+from fastapi import BackgroundTasks
 import requests
 
-from config import get_settings
+from .config import get_settings
 
 settings = get_settings()
 
