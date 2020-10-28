@@ -31,11 +31,12 @@ class Shape(BaseModel):
 
 class UserBase(BaseModel):
     email: str
+    name: str
 
 
 class UserCreate(UserBase):
     email: EmailStr
-    token: str
+    name: str
 
     class Config:
         orm_mode = True

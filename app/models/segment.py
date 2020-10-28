@@ -29,10 +29,7 @@ class Segment(BaseMixin, Base):
     count = Column(Integer)
     quality = Column(Integer)
 
-    reason_for_refusal = relationship("Recording", back_populates="segment")
-
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="shapes")
+    reason_for_refusal = relationship("Reason", back_populates="segment")
 
     recording_id = Column(Integer, ForeignKey("recordings.id"))
-    recording = relationship("Recording", back_populates="segments")
+    recordings = relationship("Recording", back_populates="segments")
