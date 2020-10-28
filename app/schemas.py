@@ -30,7 +30,7 @@ class Shape(BaseModel):
 
 
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr
     name: str
 
 
