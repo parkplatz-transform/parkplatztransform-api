@@ -1,6 +1,3 @@
-import smtplib
-
-from fastapi import BackgroundTasks
 import requests
 
 from .config import get_settings
@@ -8,7 +5,6 @@ from .config import get_settings
 settings = get_settings()
 
 
-# TOOD: discuss and fill appropriate values here
 def send_email_verification_link(email: str, token: str = ""):
     token_link = f"{token}"
     return requests.post(

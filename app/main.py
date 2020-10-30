@@ -1,5 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks
+from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from .pypale import Pypale
@@ -41,9 +42,8 @@ async def verify_token(token: HTTPAuthorizationCredentials = Depends(bearer_sche
 def create_user(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     token = pypale.generate_token(user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail=strings.validation["email_in_use"])
-    user = crud.create_user(db=db, user=user)
+    if not db_user:
+        user = crud.create_user(db=db, user=user)
     background_tasks.add_task(email_service.send_email_verification_link, user.email, token)
     return user
 
@@ -55,3 +55,14 @@ async def read_user(db: Session = Depends(get_db), token: HTTPAuthorizationCrede
     if db_user is None:
         raise HTTPException(status_code=404, detail=strings.validation["user_not_found"])
     return db_user
+
+
+@app.get("/verify_token")
+async def read_user(response: Response, email: str, token: str, db: Session = Depends(get_db)):
+    valid = pypale.valid_token(return_token=token, return_email=email)
+    if valid:
+        response.set_cookie(key="access_token", value=f"Bearer: {token}", httponly=True)
+        return RedirectResponse("https://pt.moewencloud.de/")
+    else:
+        raise HTTPException(401, strings.validation["unauthorized"])
+
