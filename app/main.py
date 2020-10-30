@@ -66,3 +66,8 @@ async def read_user(response: Response, email: str, token: str, db: Session = De
     else:
         raise HTTPException(401, strings.validation["unauthorized"])
 
+
+@app.get("/recordings", response_model=schemas.Recording, dependencies=[Depends(verify_token)])
+async def read_recordings(db: Session = Depends(get_db), token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    db_recordings = crud.get_recordings(db)
+    return db_recordings

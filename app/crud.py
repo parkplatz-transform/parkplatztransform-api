@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from . import schemas
 
-from .models import User
+from .models import User, Recording
 
 
 def get_user(db: Session, user_id: int):
@@ -19,3 +19,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def get_recordings(db: Session):
+    return db.query(Recording)
