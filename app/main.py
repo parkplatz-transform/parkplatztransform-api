@@ -1,8 +1,10 @@
 import base64
+from typing import List, Optional, Tuple
 
 import time
 from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy.orm import Session
 
 from .one_time_auth import OneTimeAuth, decode_jwt
@@ -11,6 +13,7 @@ from .database import SessionLocal
 from .config import get_settings
 
 app = FastAPI()
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 settings = get_settings()
 
@@ -65,11 +68,16 @@ def verify_magic_link(code: str, email: str, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+def parse_bounding_box(parameter: str) -> List[Tuple[str, str]]:
+    spl = parameter.split(",")
+    return list(zip(spl[0::2], spl[1::2]))
+
+
 @app.get("/segments/", response_model=schemas.SegmentCollection)
-async def read_segments(
-    db: Session = Depends(get_db),
-):
-    db_recordings = controllers.get_segments(db)
+async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db)):
+    if bbox:
+        bbox = parse_bounding_box(bbox)
+    db_recordings = controllers.get_segments(db, bbox=bbox)
     return db_recordings
 
 

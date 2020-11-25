@@ -2,8 +2,8 @@ from typing import Optional, List
 import datetime
 
 from pydantic import BaseModel
-from geojson_pydantic.features import Feature as PydanticFeature
-from geojson_pydantic.features import FeatureCollection as PydanticFeatureCollection
+from geojson_pydantic.features import Feature
+from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import LineString as PydanticLineString
 
 from ..models import Alignment, StreetLocation
@@ -39,7 +39,7 @@ class Subsegments(BaseModel):
     subsegments: List[Subsegment]
 
 
-class Segment(PydanticFeature):
+class Segment(Feature):
     properties: Subsegments
     geometry: LineString
 
@@ -47,7 +47,7 @@ class Segment(PydanticFeature):
         orm_mode = True
 
 
-class SegmentCollection(PydanticFeatureCollection):
+class SegmentCollection(FeatureCollection):
     features: List[Segment]
 
 

@@ -1,6 +1,9 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Polygon
+from geojson_pydantic.geometries import Coordinate
 
 from .. import schemas
 from ..models import Segment, Subsegment
@@ -18,8 +21,14 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     )
 
 
-def get_segments(db: Session) -> schemas.SegmentCollection:
-    segments = db.query(Segment).all()
+def get_segments(db: Session, bbox: List[Coordinate] = None) -> schemas.SegmentCollection:
+    if bbox:
+        polygon = from_shape(Polygon(bbox), srid=4326)
+        segments = db.query(Segment)\
+            .filter(polygon.ST_Contains(Segment.geometry))\
+            .all()
+    else:
+        segments = db.query(Segment).all()
     collection = list(map(lambda feat: serialize_segment(feat), segments))
     return schemas.SegmentCollection(features=collection)
 
@@ -36,7 +45,7 @@ def create_segment(
 
     for prop in segment.properties.subsegments:
         db_prop = Subsegment(
-            segment_id=db_feature.id, segment=db_feature, marked=True, **prop.__dict__
+            segment_id=db_feature.id, segment=db_feature, **prop.__dict__
         )
         db.add(db_prop)
 
