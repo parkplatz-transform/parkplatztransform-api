@@ -11,9 +11,9 @@ def send_email_verification_link(email: str, token: str = ""):
         f"https://api.mailgun.net/v3/{settings.mailgun_domain}/messages",
         auth=("api", settings.mailgun_api_key),
         data={
-            "from": "Park Platz Transform Verification verify@parkplatztransform.com",
+            "from": "Parkplatz Transform Verification verify@parkplatztransform.com",
             "to": [email],
             "subject": "Please verify your email address",
-            "text": token_link,
+            "text": f"http://{settings.base_url}/verify/?code={token_link}&email={email}",
         },
     )

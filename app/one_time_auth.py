@@ -7,13 +7,33 @@ import time
 import jwt
 from typing import Optional
 
+from .config import get_settings
 
-class Pypale:
-    JWT_ALGORITHM = "HS256"
+settings = get_settings()
+
+
+def decode_jwt(token: str) -> dict:
+    token_metadata = jwt.decode(
+        token, settings.secret_key, algorithms=[settings.jwt_algorithm]
+    )
+    return token_metadata
+
+
+# Adapted from:
+# https://github.com/anthcor/pypale
+
+
+class OneTimeAuth:
+    JWT_ALGORITHM = settings.jwt_algorithm
     ENCODING = "utf8"
 
-    def __init__(self, token_ttl_minutes: int, base_url: str, secret_key: str,
-                 token_issue_ttl_seconds: int):
+    def __init__(
+        self,
+        token_ttl_minutes: int,
+        base_url: str,
+        secret_key: str,
+        token_issue_ttl_seconds: int,
+    ):
         self.token_ttl_minutes = token_ttl_minutes
         self.base_url = base_url
         self.secret_key = secret_key
@@ -21,9 +41,12 @@ class Pypale:
 
     def generate_token(self, email: str) -> str:
         return base64.b64encode(
-            jwt.encode(self.generate_token_metadata(email),
-                       self.secret_key,
-                       algorithm=self.JWT_ALGORITHM)).decode(self.ENCODING)
+            jwt.encode(
+                self.generate_token_metadata(email),
+                self.secret_key,
+                algorithm=self.JWT_ALGORITHM,
+            )
+        ).decode(self.ENCODING)
 
     def generate_token_metadata(self, email: str) -> dict:
         return {
@@ -31,35 +54,28 @@ class Pypale:
             "jti": self.one_time_nonce(),
             "iat": int(time.time()),
             "exp": int(time.time()) + (self.token_ttl_minutes * 60),
-            "iss": self.base_url
+            "iss": self.base_url,
         }
 
     def one_time_nonce(
-            self,
-            size=16,
-            chars=string.ascii_letters + string.digits + "-") -> str:
+        self, size=16, chars=string.ascii_letters + string.digits + "-"
+    ) -> str:
         return "".join(random.choice(chars) for _ in range(size))
 
     def get_decoded_token(self, return_token: str) -> Optional[dict]:
         try:
             decoded_return_token = base64.b64decode(return_token).decode(self.ENCODING)
             token_metadata = jwt.decode(
-                decoded_return_token,
-                self.secret_key,
-                algorithms=[self.JWT_ALGORITHM]
+                decoded_return_token, self.secret_key, algorithms=[self.JWT_ALGORITHM]
             )
-            return {
-                "email": token_metadata["sub"],
-                "ttl": token_metadata["iat"]
-            }
+            return {"email": token_metadata["sub"], "ttl": token_metadata["iat"]}
         except Exception as e:
             return None
 
     def valid_token(self, return_token: str, return_email: str = "") -> bool:
         try:
             decoded_token = self.get_decoded_token(return_token=return_token)
-            if (decoded_token["ttl"] + self.token_issue_ttl_seconds) < int(
-                    time.time()):
+            if (decoded_token["ttl"] + self.token_issue_ttl_seconds) < int(time.time()):
                 logging.warning("Token was issued too long ago.")
                 return False
             elif return_email != "":
@@ -70,6 +86,5 @@ class Pypale:
             else:
                 return True
         except Exception as e:
-            logging.exception(
-                f"Raised exception while validating login link: {e}")
+            logging.exception(f"Raised exception while validating login link: {e}")
             return False

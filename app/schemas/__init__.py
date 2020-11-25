@@ -1,4 +1,2 @@
-from .user import User, UserCreate, UserBase
-from .segment import Segment
-from .shape import Shape
-from .recording import Recording
+from .user import User, UserBase
+from .segment import SegmentBase, Segment, SegmentCreate, Subsegment, SegmentCollection

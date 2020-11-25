@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     base_url: str = "localhost:8023"
     mailgun_api_key: str
     mailgun_domain: str
+    jwt_algorithm: str = "HS256"
 
     class Config:
         env_file = ".env"
@@ -18,4 +19,3 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings():
     return Settings()
-

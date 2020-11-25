@@ -2,34 +2,48 @@ import enum
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, Enum
 from sqlalchemy.orm import relationship
+from geoalchemy2 import Geometry
 
 from .base_mixin import BaseMixin, Base
 
 
-class Alignment(enum.Enum):
-    along_street = 0
-    diagonal = 1
-    orthogonal = 2
+class Alignment(str, enum.Enum):
+    parallel = "parallel"
+    perpendicular = "perpendicular"
+    diagonal = "diagonal"
 
 
-class Allowed(enum.Enum):
-    never = 0
-    temporarily = 1
-    always = 2
+class StreetLocation(str, enum.Enum):
+    street = "street"
+    curb = "curb"
+    sidewalk = "sidewalk"
+    parking_bay = "parking_bay"
+    middle = "middle"
+    car_park = "car_park"
+
+
+class Subsegment(BaseMixin, Base):
+    __tablename__ = "subsegments"
+
+    order_number = Column(Integer)
+    parking_allowed = Column(Boolean)
+    marked = Column(Boolean)
+    alignment = Column(Enum(Alignment))
+    street_location = Column(Enum(StreetLocation))
+    length_in_meters = Column(Integer)
+    car_count = Column(Integer)
+    count = Column(Integer)
+    quality = Column(Integer)
+
+    segment_id = Column(Integer, ForeignKey("segments.id"))
+    segment = relationship("Segment", back_populates="subsegments")
 
 
 class Segment(BaseMixin, Base):
     __tablename__ = "segments"
 
-    order_number = Column(Integer)
-    allowed = Column(Enum(Allowed))
-    marked = Column(Boolean)
-    alignment = Column(Enum(Alignment))
-    length_in_meters = Column(Integer)
-    count = Column(Integer)
-    quality = Column(Integer)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="segments")
 
-    reason_for_refusal = relationship("Reason", back_populates="segment")
-
-    recording_id = Column(Integer, ForeignKey("recordings.id"))
-    recordings = relationship("Recording", back_populates="segments")
+    subsegments = relationship("Subsegment", back_populates="segment")
+    geometry = Column(Geometry(geometry_type="LINESTRING", srid=4326))
