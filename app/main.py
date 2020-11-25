@@ -68,8 +68,8 @@ def verify_magic_link(code: str, email: str, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-def parse_bounding_box(parameter: str) -> List[Tuple[str, str]]:
-    spl = parameter.split(",")
+def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
+    spl = list(map(lambda n: float(n), parameter.split(",")))
     return list(zip(spl[0::2], spl[1::2]))
 
 

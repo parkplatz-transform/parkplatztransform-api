@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from sqlalchemy.orm import Session
 from geoalchemy2.shape import from_shape, to_shape
@@ -21,7 +21,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     )
 
 
-def get_segments(db: Session, bbox: List[Coordinate] = None) -> schemas.SegmentCollection:
+def get_segments(db: Session, bbox: List[Tuple[float, float]] = None) -> schemas.SegmentCollection:
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = db.query(Segment)\
