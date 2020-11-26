@@ -21,12 +21,12 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     )
 
 
-def get_segments(db: Session, bbox: List[Tuple[float, float]] = None) -> schemas.SegmentCollection:
+def get_segments(
+    db: Session, bbox: List[Tuple[float, float]] = None
+) -> schemas.SegmentCollection:
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
-        segments = db.query(Segment)\
-            .filter(polygon.ST_Contains(Segment.geometry))\
-            .all()
+        segments = db.query(Segment).filter(polygon.ST_Contains(Segment.geometry)).all()
     else:
         segments = db.query(Segment).all()
     collection = list(map(lambda feat: serialize_segment(feat), segments))

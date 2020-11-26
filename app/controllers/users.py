@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from .. import schemas
 
-from ..models import Segment, User, Subsegment
+from ..models import User
 
 
 def get_user(db: Session, user_id: int) -> User:
