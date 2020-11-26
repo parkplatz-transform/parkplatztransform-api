@@ -61,6 +61,8 @@ docker-compose up
 ```
 To start the database and web server
 
+The web server will be available on localhost:8023
+
 #### Deployment
 
 The application is currently deployed on Heroku and depends on the following third party services:
