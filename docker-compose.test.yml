@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  postgres_test:
+    restart: always
+    container_name: "postgres_test"
+    image: postgis/postgis
+    ports:
+      - "54321"
+    env_file:
+      - .env
+  api_tests:
+    container_name: "api_tests"
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres_test
+    ports:
+      - "8024"
+    volumes:
+      - .:/app
+    command: ["pytest", "--cov=app"]

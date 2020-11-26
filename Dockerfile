@@ -1,11 +1,3 @@
-# FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8-alpine3.10
-#
-# COPY ./requirements.txt /app/requirements.txt
-#
-# COPY ./app /app
-#
-# CMD /start-reload.sh
-
 FROM python:3.9-alpine3.12
 
 COPY ./requirements.txt /app/requirements.txt
