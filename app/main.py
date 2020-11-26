@@ -7,4 +7,3 @@ app = FastAPI()
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(users.router)
 app.include_router(segments.router)
-
