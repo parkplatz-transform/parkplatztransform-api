@@ -19,6 +19,6 @@ class EmailService:
                 "from": "Parkplatz Transform Verification verify@parkplatztransform.com",
                 "to": [email],
                 "subject": "Please verify your email address",
-                "text": f"http://{self.base_url}/verify/?code={token}&email={email}",
+                "text": f"http://{self.base_url}/users/verify/?code={token}&email={email}",
             },
         )

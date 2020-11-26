@@ -36,7 +36,7 @@ def send_magic_link(
     return user
 
 
-@router.get("/verify/", response_model=dict)
+@router.get("/users/verify/", response_model=schemas.UserVerified)
 def verify_magic_link(code: str, email: str, db: Session = Depends(get_db)):
     if not one_time_auth.valid_token(code, email):
         raise HTTPException(401, validation["unauthorized"])
@@ -44,4 +44,4 @@ def verify_magic_link(code: str, email: str, db: Session = Depends(get_db)):
     if not controllers.get_user_by_email(db, email):
         controllers.create_user(db, schemas.UserBase(email=decoded["email"]))
     access_token = base64.b64decode(code).decode("utf8")
-    return {"access_token": access_token, "token_type": "bearer"}
+    return schemas.UserVerified(access_token=access_token)

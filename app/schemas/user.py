@@ -13,3 +13,8 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+
+class UserVerified(BaseModel):
+    access_token: str
+    token_type: str = "Bearer"
