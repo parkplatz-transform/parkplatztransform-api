@@ -56,5 +56,7 @@ def create_segment(
 
 
 def delete_segment(db: Session, segment_id: str):
-    segment = db.query(Segment).get(segment_id)
-    return segment.delete()
+    segment = db.query(Segment).filter(Segment.id == segment_id).first()
+    db.delete(segment)
+    db.commit()
+    return segment

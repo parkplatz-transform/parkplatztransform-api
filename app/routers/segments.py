@@ -39,16 +39,18 @@ async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db
     "/segments/", response_model=schemas.Segment, dependencies=[Depends(verify_token)]
 )
 def create_segment(
-        segment: schemas.SegmentCreate,
-        db: Session = Depends(get_db),
-        token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    segment: schemas.SegmentCreate,
+    db: Session = Depends(get_db),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     email = decode_jwt(token.credentials)["sub"]
     created_recording = controllers.create_segment(db=db, segment=segment, email=email)
     return created_recording
 
 
-@router.delete("/segments/{segment_id}")
+@router.delete(
+    "/segments/{segment_id}", response_model=int, dependencies=[Depends(verify_token)]
+)
 def delete_segment(segment_id: int, db: Session = Depends(get_db)):
     result = controllers.delete_segment(db=db, segment_id=segment_id)
     if not result:

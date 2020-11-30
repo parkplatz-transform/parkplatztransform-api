@@ -35,7 +35,7 @@ class Subsegment(BaseMixin, Base):
     count = Column(Integer)
     quality = Column(Integer)
 
-    segment_id = Column(Integer, ForeignKey("segments.id"))
+    segment_id = Column(Integer, ForeignKey("segments.id", ondelete="CASCADE"))
     segment = relationship("Segment", back_populates="subsegments")
 
 
@@ -45,5 +45,7 @@ class Segment(BaseMixin, Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="segments")
 
-    subsegments = relationship("Subsegment", back_populates="segment")
+    subsegments = relationship(
+        "Subsegment", back_populates="segment", cascade="all, delete"
+    )
     geometry = Column(Geometry(geometry_type="LINESTRING", srid=4326))
