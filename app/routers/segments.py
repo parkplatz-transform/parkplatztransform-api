@@ -35,6 +35,17 @@ async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db
     return db_recordings
 
 
+@router.get(
+    "/segments/{segment_id}",
+    response_model=schemas.Segment,
+)
+def get_segment(segment_id: int, db: Session = Depends(get_db)):
+    segment = controllers.get_segment(db=db, segment_id=segment_id)
+    if not segment:
+        HTTPException(status_code=404)
+    return segment
+
+
 @router.post(
     "/segments/", response_model=schemas.Segment, dependencies=[Depends(verify_token)]
 )
