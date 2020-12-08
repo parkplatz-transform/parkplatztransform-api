@@ -6,7 +6,7 @@ settings = get_settings()
 
 
 class EmailService:
-    base_url: str = settings.base_url
+    base_url: str = settings.frontend_url
     mailgun_domain: str = settings.mailgun_domain
     mailgun_api_key: str = settings.mailgun_api_key
     token_link: str = ""
@@ -19,6 +19,6 @@ class EmailService:
                 "from": "Parkplatz Transform Verification verify@parkplatztransform.com",
                 "to": [email],
                 "subject": "Please verify your email address",
-                "text": f"http://{self.base_url}/users/verify/?code={token}&email={email}",
+                "text": f"{self.base_url}/verify-token/?code={token}&email={email}",
             },
         )

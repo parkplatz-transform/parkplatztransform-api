@@ -39,6 +39,6 @@ def verify_magic_link(code: str, email: str, db: Session = Depends(get_db)):
         raise HTTPException(401, validation["unauthorized"])
     decoded = one_time_auth.get_decoded_token(code)
     if not controllers.get_user_by_email(db, email):
-        controllers.create_user(db, schemas.UserBase(email=decoded["email"]))
+        controllers.create_user(db, schemas.UserBase(email=decoded["sub"]))
     access_token = base64.b64decode(code).decode("utf8")
     return schemas.UserVerified(access_token=access_token)
