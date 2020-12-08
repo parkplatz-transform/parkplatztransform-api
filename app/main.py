@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import segments, users
+from .open_api import custom_openapi
 
 app = FastAPI()
 
@@ -17,6 +18,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.openapi = lambda: custom_openapi(app)
 
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
