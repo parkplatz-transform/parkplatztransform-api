@@ -35,6 +35,17 @@ async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db
     return db_recordings
 
 
+@router.get(
+    "/segments/{segment_id}",
+    response_model=schemas.Segment,
+)
+def get_segment(segment_id: int, db: Session = Depends(get_db)):
+    segment = controllers.get_segment(db=db, segment_id=segment_id)
+    if not segment:
+        HTTPException(status_code=404)
+    return segment
+
+
 @router.post(
     "/segments/", response_model=schemas.Segment, dependencies=[Depends(verify_token)]
 )
@@ -46,3 +57,13 @@ def create_segment(
     email = decode_jwt(token.credentials)["sub"]
     created_recording = controllers.create_segment(db=db, segment=segment, email=email)
     return created_recording
+
+
+@router.delete(
+    "/segments/{segment_id}", response_model=int, dependencies=[Depends(verify_token)]
+)
+def delete_segment(segment_id: int, db: Session = Depends(get_db)):
+    result = controllers.delete_segment(db=db, segment_id=segment_id)
+    if not result:
+        HTTPException(status_code=404)
+    return segment_id
