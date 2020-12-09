@@ -12,8 +12,5 @@ def custom_openapi(app):
         description="Parkplatz Transform API documentation",
         routes=app.routes,
     )
-    openapi_schema["servers"] = [
-        {"url": get_settings().base_url}
-    ]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
