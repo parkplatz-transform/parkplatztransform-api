@@ -40,6 +40,7 @@ class Subsegments(BaseModel):
 
 
 class Segment(Feature):
+    id: int
     properties: Subsegments
     geometry: LineString
 

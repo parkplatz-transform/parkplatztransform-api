@@ -20,11 +20,11 @@ class EmailService:
                 "to": [email],
                 "subject": "Please verify your email address",
                 "text": f"""
-                    Production URL:
-                    {self.base_url}/verify-token/?code={token}&email={email}
-                    
-                    Development URL:
-                    http://localhost:3000/verify-token/?code={token}&email={email}
+                Production URL:
+                {self.base_url}/verify-token/?code={token}&email={email}
+                
+                Development URL:
+                http://localhost:3000/verify-token/?code={token}&email={email}
                 """,
             },
         )
