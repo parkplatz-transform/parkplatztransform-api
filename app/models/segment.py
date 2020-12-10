@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Enum
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Enum, Numeric
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -30,7 +30,7 @@ class Subsegment(BaseMixin, Base):
     marked = Column(Boolean)
     alignment = Column(Enum(Alignment))
     street_location = Column(Enum(StreetLocation))
-    length_in_meters = Column(Integer)
+    length_in_meters = Column(Numeric(precision=2))
     car_count = Column(Integer)
     count = Column(Integer)
     quality = Column(Integer)
