@@ -20,7 +20,7 @@ class SubsegmentBase(BaseModel):
     marked: bool = True
     alignment: Alignment = Alignment.parallel
     street_location: StreetLocation = StreetLocation.street
-    length_in_meters: int = 0
+    length_in_meters: float = 0
     car_count: int = 0
     quality: int = 1
 
