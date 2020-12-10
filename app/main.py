@@ -7,7 +7,7 @@ from .open_api import custom_openapi
 app = FastAPI()
 
 origins = [
-    "https://pt.moewencloud.de/",
+    "https://pt.moewencloud.de",
     "http://localhost:3000",
 ]
 
