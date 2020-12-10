@@ -63,3 +63,7 @@ class SegmentCreate(BaseModel):
     type: str = "Feature"
     properties: SubsegmentsBase
     geometry: LineString
+
+
+class SegmentUpdate(SegmentCreate):
+    properties: Subsegments

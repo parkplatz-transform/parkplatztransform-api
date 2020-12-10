@@ -10,9 +10,11 @@ from .users import get_user_by_email
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
-    subsegments = list(
-        map(lambda sub: schemas.Subsegment(**sub.__dict__), segment.subsegments)
-    )
+    subsegments = []
+    if segment.subsegments:
+        subsegments = list(
+            map(lambda sub: schemas.Subsegment(**sub.__dict__), segment.subsegments)
+        )
     return schemas.Segment(
         id=segment.id,
         properties={"subsegments": subsegments},
@@ -51,6 +53,23 @@ def create_segment(
     db.add(db_feature)
     db.commit()
     db.refresh(db_feature)
+    return serialize_segment(db_feature)
+
+
+def update_segment(
+    db: Session, segment_id: int, segment: schemas.SegmentCreate, email: str
+) -> schemas.Segment:
+    geometry = from_shape(
+        LineString(coordinates=segment.geometry.coordinates), srid=4326
+    )
+
+    user = get_user_by_email(db, email)
+    db_feature = db.query(Segment).get(segment_id)
+
+    db_feature.geometry = geometry
+    db_feature.owner_id = user.id
+
+    db.commit()
     return serialize_segment(db_feature)
 
 

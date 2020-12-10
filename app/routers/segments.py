@@ -43,7 +43,7 @@ async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db
     "/segments/{segment_id}",
     response_model=schemas.Segment,
 )
-def get_segment(segment_id: int, db: Session = Depends(get_db)):
+def read_segment(segment_id: int, db: Session = Depends(get_db)):
     segment = controllers.get_segment(db=db, segment_id=segment_id)
     if not segment:
         HTTPException(status_code=404)
@@ -71,3 +71,20 @@ def delete_segment(segment_id: int, db: Session = Depends(get_db)):
     if not result:
         HTTPException(status_code=404)
     return segment_id
+
+
+@router.put(
+    "/segments/{segment_id}", response_model=schemas.SegmentUpdate, dependencies=[Depends(verify_token)]
+)
+def update_segment(
+    segment_id: int,
+    segment: schemas.SegmentUpdate,
+    db: Session = Depends(get_db),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+
+):
+    email = decode_jwt(token.credentials)["sub"]
+    result = controllers.update_segment(db=db, segment_id=segment_id, segment=segment, email=email)
+    if not result:
+        HTTPException(status_code=404)
+    return segment
