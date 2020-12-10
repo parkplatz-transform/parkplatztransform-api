@@ -3,7 +3,6 @@ from typing import List, Tuple
 from sqlalchemy.orm import Session
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
-from geojson_pydantic.geometries import Coordinate
 
 from .. import schemas
 from ..models import Segment, Subsegment
@@ -55,13 +54,13 @@ def create_segment(
     return serialize_segment(db_feature)
 
 
-def delete_segment(db: Session, segment_id: str):
+def delete_segment(db: Session, segment_id: int):
     segment = db.query(Segment).filter(Segment.id == segment_id).first()
     db.delete(segment)
     db.commit()
     return segment
 
 
-def get_segment(db: Session, segment_id: str):
+def get_segment(db: Session, segment_id: int):
     segment = db.query(Segment).get(segment_id)
     return serialize_segment(segment)
