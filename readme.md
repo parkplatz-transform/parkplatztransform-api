@@ -2,13 +2,15 @@
 
 Park Platz Transform API, intended to be consumed by the Park Platz Transform app, admin and potential 3rd parties.
 
-### Dependencies Documentation
+### Relevant external documentation
 
-| Name       | Documentation                                                                                 |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| FastAPI            | [docs](https://fastapi.tiangolo.com/)                   |
-| PostgresSQL        | [docs](https://www.postgresql.org/)           |
-| PostGIS | [docs](https://postgis.net/documentation/)                         |
+| Name       | Documentation                                    | Role                |
+| -----------| -------------------------------------------------|---------------------|
+| FastAPI    | [docs](https://fastapi.tiangolo.com/)            | API Framework       |
+| SQLAlchemy | [docs](https://docs.sqlalchemy.org/en/13/)       | ORM                 |
+| Alembic    | [docs](https://alembic.sqlalchemy.org/en/latest/)| Database migrations |
+| PostgresSQL| [docs](https://www.postgresql.org/)              | Database            |
+| PostGIS    | [docs](https://postgis.net/documentation/)       | Geo Extensions      |
 
 ### Open API Documentation
 
