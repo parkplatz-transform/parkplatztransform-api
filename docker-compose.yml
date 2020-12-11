@@ -6,6 +6,8 @@ services:
     image: postgis/postgis
     ports:
       - "54320:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
     env_file:
       - .env
   app:
