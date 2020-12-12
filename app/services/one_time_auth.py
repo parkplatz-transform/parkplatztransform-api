@@ -29,10 +29,10 @@ class OneTimeAuth:
 
     def __init__(
         self,
-        token_ttl_minutes: int,
-        base_url: str,
-        secret_key: str,
-        token_issue_ttl_seconds: int,
+        token_ttl_minutes: int = int(settings.token_ttl_minutes),
+        base_url: str = settings.base_url,
+        secret_key: str = settings.secret_key,
+        token_issue_ttl_seconds: int = int(settings.token_issue_ttl_seconds),
     ):
         self.token_ttl_minutes = token_ttl_minutes
         self.base_url = base_url

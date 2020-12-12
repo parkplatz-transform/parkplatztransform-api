@@ -5,14 +5,15 @@ services:
     container_name: "postgres_test"
     image: postgis/postgis
     ports:
-      - "54321"
-    env_file:
-      - .env
+      - "5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
   api_tests:
     container_name: "api_tests"
     build: .
-    env_file:
-      - .env
+    environment:
+      SECRET_KEY: "secrettestingkey"
+      DATABASE_URL: "postgresql://postgres:postgres@postgres_test/postgres"
     depends_on:
       - postgres_test
     ports:

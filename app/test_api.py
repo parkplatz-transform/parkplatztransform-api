@@ -1,20 +1,23 @@
+import base64
 import json
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from app.main import app
-from app.models.base_mixin import Base
 from app.routers.segments import verify_token, get_user_from_token
+from app.services import OneTimeAuth
 
 
 client = TestClient(app)
 
+OTA = OneTimeAuth()
+email = "testuser@email.com"
+token = OTA.generate_token(email)
+
 
 def get_user_from_token_mock():
     return {
-        "sub": "testuser@email.com"
+        "sub": email
     }
 
 
@@ -24,6 +27,15 @@ def verify_token_mock():
 
 app.dependency_overrides[get_user_from_token] = get_user_from_token_mock
 app.dependency_overrides[verify_token] = verify_token_mock
+
+
+def test_create_user():
+    response = client.get(f"/users/verify/?code={token}&email={email}")
+    assert response.status_code == 200
+    assert response.json() == {
+        "access_token": base64.b64decode(token).decode("utf8"),
+        "token_type": "Bearer"
+    }
 
 
 def test_read_segments():
@@ -70,3 +82,4 @@ def test_create_segment():
     }
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
+    assert response.json()["geometry"] == data["geometry"]

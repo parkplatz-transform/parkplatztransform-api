@@ -8,20 +8,12 @@ from sqlalchemy.orm import Session
 from app import schemas, controllers
 from app.database import get_db
 from app.services import OneTimeAuth, EmailService
-from app.config import get_settings
 from app.strings import validation
 
 router = APIRouter()
 email_service = EmailService()
 
-settings = get_settings()
-
-one_time_auth = OneTimeAuth(
-    base_url=settings.base_url,
-    secret_key=settings.secret_key,
-    token_ttl_minutes=int(settings.token_ttl_minutes),
-    token_issue_ttl_seconds=int(settings.token_issue_ttl_seconds),
-)
+one_time_auth = OneTimeAuth()
 
 
 @router.post("/users/", response_model=schemas.UserBase)
