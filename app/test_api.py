@@ -6,15 +6,23 @@ from sqlalchemy.orm import sessionmaker
 
 from app.main import app
 from app.models.base_mixin import Base
-from app.routers.segments import verify_token
+from app.routers.segments import verify_token, get_user_from_token
+
 
 client = TestClient(app)
+
+
+def get_user_from_token_mock():
+    return {
+        "sub": "testuser@email.com"
+    }
 
 
 def verify_token_mock():
     return True
 
 
+app.dependency_overrides[get_user_from_token] = get_user_from_token_mock
 app.dependency_overrides[verify_token] = verify_token_mock
 
 

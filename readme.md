@@ -71,6 +71,25 @@ The web server will be available [here](http://localhost:8023)
 If you prefer to run the app without using docker, make sure you have postgresql (with Postgis extension) running locally and set the appropriate value for the environment variable `DATABASE_URL`. You will need a Python 3.9+ and Pip installed.
 Run `pip install -r requirements.txt` in the root directory to install dependencies.
 
+### Database Migrations
+
+The project uses Alembic for generating some versioned migration boilerplate, however Alembic encourages that you inspect and edit these migration files to your needs.
+A few helper scripts exist to run migrations scripts inside the docker containers.
+
+
+To generate a new migration file based off of SQLAlchemy models:
+
+```shell
+sh ./scripts/make-migrations.sh
+```
+
+To migrate a database to its latest version run:
+```shell
+sh ./scripts/migrate.sh
+```
+
+__Caveats__: Changes to enums and `geoAlchemy2` fields currently require manual intervention.
+
 ### Deployment
 
 The application is currently deployed on Heroku and depends on the following third-party services:

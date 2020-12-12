@@ -14,6 +14,13 @@ router = APIRouter()
 bearer_scheme = HTTPBearer()
 
 
+async def get_user_from_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    try:
+        return decode_jwt(token.credentials)
+    except Exception as e:
+        raise HTTPException(401, validation["unauthorized"])
+
+
 async def verify_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     try:
         token_metadata = decode_jwt(token.credentials)
@@ -56,9 +63,9 @@ def read_segment(segment_id: int, db: Session = Depends(get_db)):
 def create_segment(
     segment: schemas.SegmentCreate,
     db: Session = Depends(get_db),
-    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    token=Depends(get_user_from_token),
 ):
-    email = decode_jwt(token.credentials)["sub"]
+    email = token["sub"]
     created_recording = controllers.create_segment(db=db, segment=segment, email=email)
     return created_recording
 
@@ -80,10 +87,9 @@ def update_segment(
     segment_id: int,
     segment: schemas.SegmentUpdate,
     db: Session = Depends(get_db),
-    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-
+    token=Depends(get_user_from_token),
 ):
-    email = decode_jwt(token.credentials)["sub"]
+    email = token["sub"]
     result = controllers.update_segment(db=db, segment_id=segment_id, segment=segment, email=email)
     if not result:
         HTTPException(status_code=404)
