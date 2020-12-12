@@ -1,5 +1,7 @@
 ## Parkplatz Transform
 
+![Integration Tests](https://github.com/theolampert/parkplatztransform-api/workflows/test-integration/badge.svg)
+
 Park Platz Transform API, intended to be consumed by the Park Platz Transform app, admin and potential 3rd parties.
 
 ### Relevant external documentation
