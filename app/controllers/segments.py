@@ -27,7 +27,7 @@ def get_segments(
 ) -> schemas.SegmentCollection:
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
-        segments = db.query(Segment).filter(polygon.ST_Contains(Segment.geometry)).all()
+        segments = db.query(Segment).filter(polygon.ST_Intersects(Segment.geometry)).all()
     else:
         segments = db.query(Segment).all()
     collection = list(map(lambda feat: serialize_segment(feat), segments))
