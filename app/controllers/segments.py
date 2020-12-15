@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from sqlalchemy.orm import Session
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import LineString, MultiPoint
 
 from .. import schemas
 from ..models import Segment, Subsegment
@@ -26,7 +26,7 @@ def get_segments(
     db: Session, bbox: List[Tuple[float, float]] = None
 ) -> schemas.SegmentCollection:
     if bbox:
-        polygon = from_shape(Polygon(bbox), srid=4326)
+        polygon = from_shape(MultiPoint(bbox), srid=4326)
         segments = db.query(Segment).filter(polygon.ST_Contains(Segment.geometry)).all()
     else:
         segments = db.query(Segment).all()
