@@ -14,27 +14,6 @@ class LineString(PydanticLineString):
 
 
 class SubsegmentBase(BaseModel):
-
-
-    # parking_allowed = Column(Boolean, nullable=False)
-    # order_number = Column(Integer, nullable=False)
-    # length_in_meters = Column(Numeric(precision=2), default=0.00, nullable=False)
-    # car_count = Column(Integer, default=0, nullable=False)
-    # quality = Column(Integer, default=0, nullable=False)  # TODO: what actually is this?
-    #
-    # # Public parking allowed
-    # fee = Column(Boolean, CheckConstraint("parking_allowed=TRUE"))
-    # street_location = Column(Enum(StreetLocation), CheckConstraint("parking_allowed=TRUE"))
-    # marked = Column(Boolean, CheckConstraint("parking_allowed=TRUE"))
-    # alignment = Column(Enum(Alignment), CheckConstraint("parking_allowed=TRUE"))
-    # duration_constraint = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False)
-    # usage_restrictions = Column(Enum(UsageRestriction), CheckConstraint("parking_allowed=TRUE"))
-    # time_constraint = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False)
-    # time_constraint_reason = Column(Text, CheckConstraint("parking_allowed=TRUE"))
-    #
-    # # Public parking not allowed
-    # no_parking_reason = Column(Enum(NoParkingReason), CheckConstraint("parking_allowed=FALSE"))
-
     parking_allowed: bool = True
     order_number: int = 0
     length_in_meters: float = 0
