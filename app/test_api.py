@@ -83,3 +83,24 @@ def test_create_segment():
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
     assert response.json()["geometry"] == data["geometry"]
+
+
+def test_read_segments_with_bbox():
+    response = client.get(
+        "/segments/?bbox=13.431708812713623,52.547078621160054,\
+        13.435056209564207,52.547078621160054,\
+        13.435056209564207,52.548370414628614,\
+        13.431708812713623,52.548370414628614,\
+        13.431708812713623,52.547078621160054"
+    )
+    assert response.status_code == 200
+    assert len(response.json()["features"]) == 1
+    assert response.json()["features"][0]["geometry"]["coordinates"] == [[
+            13.43244105577469,
+            52.54816979768233
+        ],
+        [
+            13.43432933092117,
+            52.54754673757979
+        ]
+    ]
