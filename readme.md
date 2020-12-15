@@ -68,7 +68,7 @@ The web server will be available [here](http://localhost:8023)
 
 **Important**: Docker & docker compose configuration is not secure and optimised for local development, don't deploy the app using these settings.
 
-If you prefer to run the app without using docker, make sure you have postgresql (with Postgis extension) running locally and set the appropriate value for the environment variable `DATABASE_URL`. You will need a Python 3.9+ and Pip installed.
+If you prefer to run the app without using docker, make sure you have postgresql (with Postgis extension) running locally and set the appropriate value for the environment variable `DATABASE_URL`. You will need Python 3.9+ and Pip installed.
 Run `pip install -r requirements.txt` in the root directory to install dependencies.
 
 ### Database Migrations
@@ -93,8 +93,8 @@ __Caveats__: Changes to enums and `geoAlchemy2` fields currently require manual 
 ### Deployment
 
 The application is currently deployed on Heroku and depends on the following third-party services:
-- Mailgun API for sending magic link emails
-- Heroku Postgres with PostGIS extension installed
+- Mailgun API for sending emails contains verification links
+- Heroku Postgres with the PostGIS extension installed
 
 These services should set their environment variables automatically.
 
