@@ -15,10 +15,12 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
         subsegments = list(
             map(lambda sub: schemas.Subsegment(**sub.__dict__), segment.subsegments)
         )
+    shape = to_shape(segment.geometry)
     return schemas.Segment(
         id=segment.id,
         properties={"subsegments": subsegments},
-        geometry={"coordinates": to_shape(segment.geometry).coords[:]},
+        geometry={"coordinates": shape.coords[:]},
+        bbox=shape.bounds
     )
 
 

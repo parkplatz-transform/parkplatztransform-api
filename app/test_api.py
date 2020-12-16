@@ -87,7 +87,8 @@ def test_create_segment():
     }
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
-    assert response.json()["geometry"] == data["geometry"]
+    assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
+    assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 
