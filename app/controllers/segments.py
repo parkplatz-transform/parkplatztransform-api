@@ -29,16 +29,16 @@ def get_segments(
     bbox: List[Tuple[float, float]] = None,
     exclude: List[int] = None,
 ) -> schemas.SegmentCollection:
-    if exclude:
+    if bbox and exclude:
+        polygon = from_shape(Polygon(bbox), srid=4326)
+        segments = db.query(Segment) \
+            .filter(polygon.ST_Intersects(Segment.geometry)) \
+            .filter(Segment.id.notin_(exclude))
+    elif exclude:
         segments = db.query(Segment).filter(Segment.id.notin_(exclude)).all()
     elif bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = db.query(Segment).filter(polygon.ST_Intersects(Segment.geometry)).all()
-    elif bbox and exclude:
-        polygon = from_shape(Polygon(bbox), srid=4326)
-        segments = db.query(Segment)\
-            .filter(polygon.ST_Intersects(Segment.geometry))\
-            .filter(Segment.id.notin_(exclude)).all()
     else:
         segments = db.query(Segment).all()
     collection = list(map(lambda feat: serialize_segment(feat), segments))
