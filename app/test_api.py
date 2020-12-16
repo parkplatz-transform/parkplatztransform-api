@@ -54,15 +54,20 @@ def test_create_segment():
         "properties": {
             "subsegments": [
                 {
-                    "order_number": 0,
                     "parking_allowed": True,
-                    "count": 0,
-                    "marked": True,
-                    "alignment": "parallel",
-                    "street_location": "street",
+                    "order_number": 0,
                     "length_in_meters": 0,
                     "car_count": 0,
-                    "quality": 1
+                    "quality": 1,
+                    "fee": False,
+                    "street_location": "street",
+                    "marked": False,
+                    "alignment": "parallel",
+                    "duration_constraint": False,
+                    "usage_restrictions": "handicap",
+                    "time_constraint": False,
+                    "time_constraint_reason": "string",
+                    "no_parking_reason": "private_parking"
                 }
             ]
         },
@@ -83,6 +88,7 @@ def test_create_segment():
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
     assert response.json()["geometry"] == data["geometry"]
+    assert len(response.json()["properties"]["subsegments"]) == 1
 
 
 def test_read_segments_with_bbox():
@@ -104,3 +110,13 @@ def test_read_segments_with_bbox():
             52.54754673757979
         ]
     ]
+
+
+def test_read_segments_with_exclude():
+    response = client.get("/segments/?exclude=1")
+    assert response.status_code == 200
+    assert response.json() == {
+        'bbox': None,
+        'features': [],
+        'type': 'FeatureCollection'
+    }

@@ -35,14 +35,19 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
 
 
 @router.get("/segments/", response_model=schemas.SegmentCollection)
-async def read_segments(bbox: Optional[str] = None, db: Session = Depends(get_db)):
+async def read_segments(bbox: Optional[str] = None, exclude: Optional[str] = None, db: Session = Depends(get_db)):
+    if exclude:
+        try:
+            exclude = exclude.split(",")
+        except Exception as e:
+            raise HTTPException(400, validation["exclude"])
     if bbox:
         try:
             bbox = parse_bounding_box(bbox)
             assert len(bbox) >= 5
         except Exception as e:
             raise HTTPException(400, validation["bbox"])
-    db_recordings = controllers.get_segments(db, bbox=bbox)
+    db_recordings = controllers.get_segments(db, bbox=bbox, exclude=exclude)
     return db_recordings
 
 

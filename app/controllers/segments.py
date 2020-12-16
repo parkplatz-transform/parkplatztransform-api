@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from sqlalchemy.orm import Session
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import LineString, Polygon, MultiPoint
+from shapely.geometry import LineString, Polygon
 
 from .. import schemas
 from ..models import Segment, Subsegment
@@ -23,11 +23,20 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 
 
 def get_segments(
-    db: Session, bbox: List[Tuple[float, float]] = None
+    db: Session,
+    bbox: List[Tuple[float, float]] = None,
+    exclude: List[int] = None,
 ) -> schemas.SegmentCollection:
-    if bbox:
+    if exclude:
+        segments = db.query(Segment).filter(Segment.id.notin_(exclude)).all()
+    elif bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = db.query(Segment).filter(polygon.ST_Intersects(Segment.geometry)).all()
+    elif bbox and exclude:
+        polygon = from_shape(Polygon(bbox), srid=4326)
+        segments = db.query(Segment)\
+            .filter(polygon.ST_Intersects(Segment.geometry))\
+            .filter(Segment.id.notin_(exclude)).all()
     else:
         segments = db.query(Segment).all()
     collection = list(map(lambda feat: serialize_segment(feat), segments))
