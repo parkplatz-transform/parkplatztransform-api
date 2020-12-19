@@ -53,18 +53,18 @@ def create_segment(
     )
 
     user = get_user_by_email(db, email)
-    db_feature = Segment(geometry=geometry, owner=user, owner_id=user.id)
+    db_segment = Segment(geometry=geometry, owner=user, owner_id=user.id)
 
-    for prop in segment.properties.subsegments:
+    for subsegment in segment.properties.subsegments:
         db_prop = Subsegment(
-            segment_id=db_feature.id, segment=db_feature, **prop.__dict__
+            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
         )
         db.add(db_prop)
 
-    db.add(db_feature)
+    db.add(db_segment)
     db.commit()
-    db.refresh(db_feature)
-    return serialize_segment(db_feature)
+    db.refresh(db_segment)
+    return serialize_segment(db_segment)
 
 
 def update_segment(
@@ -75,13 +75,38 @@ def update_segment(
     )
 
     user = get_user_by_email(db, email)
-    db_feature = db.query(Segment).get(segment_id)
+    db_segment = db.query(Segment).get(segment_id)
 
-    db_feature.geometry = geometry
-    db_feature.owner_id = user.id
+    # Write new subsegments
+    subsegments_to_add = filter(lambda sub: sub.id is None, segment.properties.subsegments)
+    for subsegment in subsegments_to_add:
+        db_subsegment = Subsegment(
+            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
+        )
+        db.add(db_subsegment)
+
+    # Remove stale subsegments
+    old_ids = set(map(lambda sub: sub.id, db_segment.subsegments))
+    new_ids = set(map(lambda sub: sub.id, segment.properties.subsegments))
+    subsegments_to_remove = old_ids - new_ids
+
+    for subsegment_id in subsegments_to_remove:
+        db_subsegment = db.query(Subsegment).get(subsegment_id)
+        db.delete(db_subsegment)
+
+    # Update changed subsegments
+    subsegments_to_update = filter(lambda sub: sub.id is not None, segment.properties.subsegments)
+    for subsegment in subsegments_to_update:
+        del subsegment.created_at
+        del subsegment.modified_at
+        db.query(Subsegment).filter(Subsegment.id == subsegment.id).update(subsegment.__dict__)
+
+    db_segment.geometry = geometry
+    db_segment.owner_id = user.id
 
     db.commit()
-    return serialize_segment(db_feature)
+    db.refresh(db_segment)
+    return serialize_segment(db_segment)
 
 
 def delete_segment(db: Session, segment_id: int):

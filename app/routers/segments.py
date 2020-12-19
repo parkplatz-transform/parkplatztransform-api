@@ -98,4 +98,4 @@ def update_segment(
     result = controllers.update_segment(db=db, segment_id=segment_id, segment=segment, email=email)
     if not result:
         HTTPException(status_code=404)
-    return segment
+    return result

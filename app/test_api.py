@@ -29,6 +29,11 @@ app.dependency_overrides[get_user_from_token] = get_user_from_token_mock
 app.dependency_overrides[verify_token] = verify_token_mock
 
 
+def test_docs():
+    response = client.get("docs")
+    assert response.status_code == 200
+
+
 def test_create_user():
     response = client.get(f"/users/verify/?code={token}&email={email}")
     assert response.status_code == 200
@@ -103,9 +108,9 @@ def test_read_segments_with_bbox():
     assert response.status_code == 200
     assert len(response.json()["features"]) == 1
     assert response.json()["features"][0]["geometry"]["coordinates"] == [[
-            13.43244105577469,
-            52.54816979768233
-        ],
+        13.43244105577469,
+        52.54816979768233
+    ],
         [
             13.43432933092117,
             52.54754673757979
@@ -121,3 +126,71 @@ def test_read_segments_with_exclude():
         'features': [],
         'type': 'FeatureCollection'
     }
+
+
+def test_update_segment():
+    data = {
+        "type": "Feature",
+        "properties": {
+            "subsegments": [
+                {
+                    "id": 1,
+                    "parking_allowed": True,
+                    "order_number": 0,
+                    "length_in_meters": 0,
+                    "car_count": 0,
+                    "quality": 1,
+                    "fee": False,
+                    "street_location": "street",
+                    "marked": True,
+                    "alignment": "parallel",
+                    "duration_constraint": False,
+                    "usage_restrictions": "handicap",
+                    "time_constraint": False,
+                    "time_constraint_reason": "string",
+                    "no_parking_reason": "private_parking"
+                },
+                # Add a subsegment
+                {
+                    "parking_allowed": True,
+                    "order_number": 0,
+                    "length_in_meters": 0,
+                    "car_count": 0,
+                    "quality": 1,
+                    "fee": False,
+                    "street_location": "street",
+                    "marked": False,
+                    "alignment": "parallel",
+                    "duration_constraint": False,
+                    "usage_restrictions": "handicap",
+                    "time_constraint": False,
+                    "time_constraint_reason": "string",
+                    "no_parking_reason": "private_parking"
+                }
+            ]
+        },
+        "geometry": {
+            "coordinates": [
+                [
+                    13.43244105577469,
+                    52.54816979768233
+                ],
+                [
+                    13.43432933092117,
+                    52.54754673757970
+                ]
+            ],
+            "type": "LineString"
+        }
+    }
+    response = client.put("/segments/1", json.dumps(data))
+    assert response.status_code == 200
+    assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
+    assert response.json()["geometry"]["type"] == data["geometry"]["type"]
+    assert len(response.json()["properties"]["subsegments"]) == 2
+    assert response.json()["properties"]["subsegments"][0]["marked"]
+
+
+def test_delete_segment():
+    response = client.delete("/segments/1")
+    assert response.status_code == 200
