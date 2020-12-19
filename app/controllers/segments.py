@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, noload
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
 
@@ -28,20 +28,17 @@ def get_segments(
     db: Session,
     bbox: List[Tuple[float, float]] = None,
     exclude: List[int] = None,
+    details: bool = True
 ) -> schemas.SegmentCollection:
-    if bbox and exclude:
+    segments = db.query(Segment)
+    if exclude:
+        segments = segments.filter(Segment.id.notin_(exclude))
+    if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
-        segments = db.query(Segment) \
-            .filter(polygon.ST_Intersects(Segment.geometry)) \
-            .filter(Segment.id.notin_(exclude))
-    elif exclude:
-        segments = db.query(Segment).filter(Segment.id.notin_(exclude)).all()
-    elif bbox:
-        polygon = from_shape(Polygon(bbox), srid=4326)
-        segments = db.query(Segment).filter(polygon.ST_Intersects(Segment.geometry)).all()
-    else:
-        segments = db.query(Segment).all()
-    collection = list(map(lambda feat: serialize_segment(feat), segments))
+        segments = segments.filter(polygon.ST_Intersects(Segment.geometry))
+    if not details:
+        segments.options(noload(Segment.subsegments))
+    collection = list(map(lambda feat: serialize_segment(feat), segments.all()))
     return schemas.SegmentCollection(features=collection)
 
 

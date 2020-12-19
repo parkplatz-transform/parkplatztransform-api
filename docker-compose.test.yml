@@ -20,4 +20,4 @@ services:
       - "8024"
     volumes:
       - .:/app
-    command: ["pytest", "--cov=app", "-s"]
+    command: ["pytest", "--cov=app", "-s", "-v"]

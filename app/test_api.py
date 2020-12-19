@@ -98,6 +98,7 @@ def test_create_segment():
 
 
 def test_read_segments_with_bbox():
+    # Test inside
     response = client.get(
         "/segments/?bbox=13.431708812713623,52.547078621160054,\
         13.435056209564207,52.547078621160054,\
@@ -108,14 +109,29 @@ def test_read_segments_with_bbox():
     assert response.status_code == 200
     assert len(response.json()["features"]) == 1
     assert response.json()["features"][0]["geometry"]["coordinates"] == [[
-        13.43244105577469,
-        52.54816979768233
-    ],
+            13.43244105577469,
+            52.54816979768233
+        ],
         [
             13.43432933092117,
             52.54754673757979
         ]
     ]
+
+    # Test outside
+    response = client.get(
+        "/segments/?bbox=13.438317775726318,52.546367466104385,\
+        13.450162410736084,52.546367466104385,\
+        13.450162410736084,52.552030289646375,\
+        13.438317775726318,52.552030289646375,\
+        13.438317775726318,52.546367466104385"
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        'bbox': None,
+        'features': [],
+        'type': 'FeatureCollection'
+    }
 
 
 def test_read_segments_with_exclude():
@@ -126,6 +142,21 @@ def test_read_segments_with_exclude():
         'features': [],
         'type': 'FeatureCollection'
     }
+
+
+def test_read_segment():
+    response = client.get("/segments/1")
+    assert response.status_code == 200
+    assert response.json()["id"] == 1
+    assert response.json()["geometry"]["coordinates"] == [[
+            13.43244105577469,
+            52.54816979768233
+        ],
+        [
+            13.43432933092117,
+            52.54754673757979
+        ]
+    ]
 
 
 def test_update_segment():
