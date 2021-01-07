@@ -1,6 +1,16 @@
 import enum
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Enum, Numeric, Text, CheckConstraint
+from sqlalchemy import (
+    Boolean,
+    Column,
+    ForeignKey,
+    Integer,
+    Enum,
+    Numeric,
+    Text,
+    CheckConstraint,
+)
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -58,18 +68,30 @@ class Subsegment(BaseMixin, Base):
 
     # Public parking allowed
     fee = Column(Boolean, CheckConstraint("parking_allowed=TRUE"))
-    street_location = Column(Enum(StreetLocation), CheckConstraint("parking_allowed=TRUE"))
+    street_location = Column(
+        Enum(StreetLocation), CheckConstraint("parking_allowed=TRUE")
+    )
     marked = Column(Boolean, CheckConstraint("parking_allowed=TRUE"))
     alignment = Column(Enum(Alignment), CheckConstraint("parking_allowed=TRUE"))
-    duration_constraint = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False)
-    usage_restrictions = Column(Enum(UsageRestriction), CheckConstraint("parking_allowed=TRUE"))
-    time_constraint = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False)
+    duration_constraint = Column(
+        Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
+    )
+    usage_restrictions = Column(
+        ARRAY(Enum(UsageRestriction)), CheckConstraint("parking_allowed=TRUE")
+    )
+    time_constraint = Column(
+        Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
+    )
     time_constraint_reason = Column(Text, CheckConstraint("parking_allowed=TRUE"))
 
     # Public parking not allowed
-    no_parking_reason = Column(Enum(NoParkingReason), CheckConstraint("parking_allowed=FALSE"))
+    no_parking_reasons = Column(
+        ARRAY(Enum(NoParkingReason)), CheckConstraint("parking_allowed=FALSE")
+    )
 
-    segment_id = Column(Integer, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False)
+    segment_id = Column(
+        Integer, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False
+    )
     segment = relationship("Segment", back_populates="subsegments")
 
 

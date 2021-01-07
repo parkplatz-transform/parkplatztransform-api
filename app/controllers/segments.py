@@ -20,7 +20,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
         id=segment.id,
         properties={"subsegments": subsegments},
         geometry={"coordinates": shape.coords[:]},
-        bbox=shape.bounds
+        bbox=shape.bounds,
     )
 
 
@@ -28,7 +28,7 @@ def get_segments(
     db: Session,
     bbox: List[Tuple[float, float]] = None,
     exclude: List[int] = None,
-    details: bool = True
+    details: bool = True,
 ) -> schemas.SegmentCollection:
     segments = db.query(Segment)
     if exclude:
@@ -75,7 +75,9 @@ def update_segment(
     db_segment = db.query(Segment).get(segment_id)
 
     # Write new subsegments
-    subsegments_to_add = filter(lambda sub: sub.id is None, segment.properties.subsegments)
+    subsegments_to_add = filter(
+        lambda sub: sub.id is None, segment.properties.subsegments
+    )
     for subsegment in subsegments_to_add:
         db_subsegment = Subsegment(
             segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
@@ -92,11 +94,15 @@ def update_segment(
         db.delete(db_subsegment)
 
     # Update changed subsegments
-    subsegments_to_update = filter(lambda sub: sub.id is not None, segment.properties.subsegments)
+    subsegments_to_update = filter(
+        lambda sub: sub.id is not None, segment.properties.subsegments
+    )
     for subsegment in subsegments_to_update:
         del subsegment.created_at
         del subsegment.modified_at
-        db.query(Subsegment).filter(Subsegment.id == subsegment.id).update(subsegment.__dict__)
+        db.query(Subsegment).filter(Subsegment.id == subsegment.id).update(
+            subsegment.__dict__
+        )
 
     db_segment.geometry = geometry
     db_segment.owner_id = user.id

@@ -14,7 +14,9 @@ router = APIRouter()
 bearer_scheme = HTTPBearer()
 
 
-async def get_user_from_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+async def get_user_from_token(
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
     try:
         return decode_jwt(token.credentials)
     except Exception as e:
@@ -39,7 +41,7 @@ async def read_segments(
     bbox: Optional[str] = None,
     exclude: Optional[str] = None,
     details: bool = True,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     if exclude:
         try:
@@ -52,7 +54,9 @@ async def read_segments(
             assert len(bbox) >= 5
         except Exception as e:
             raise HTTPException(400, validation["bbox"])
-    db_recordings = controllers.get_segments(db, bbox=bbox, exclude=exclude, details=details)
+    db_recordings = controllers.get_segments(
+        db, bbox=bbox, exclude=exclude, details=details
+    )
     return db_recordings
 
 
@@ -91,7 +95,9 @@ def delete_segment(segment_id: int, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/segments/{segment_id}", response_model=schemas.SegmentUpdate, dependencies=[Depends(verify_token)]
+    "/segments/{segment_id}",
+    response_model=schemas.SegmentUpdate,
+    dependencies=[Depends(verify_token)],
 )
 def update_segment(
     segment_id: int,
@@ -100,7 +106,9 @@ def update_segment(
     token=Depends(get_user_from_token),
 ):
     email = token["sub"]
-    result = controllers.update_segment(db=db, segment_id=segment_id, segment=segment, email=email)
+    result = controllers.update_segment(
+        db=db, segment_id=segment_id, segment=segment, email=email
+    )
     if not result:
         HTTPException(status_code=404)
     return result

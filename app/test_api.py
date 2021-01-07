@@ -16,9 +16,7 @@ token = OTA.generate_token(email)
 
 
 def get_user_from_token_mock():
-    return {
-        "sub": email
-    }
+    return {"sub": email}
 
 
 def verify_token_mock():
@@ -39,7 +37,7 @@ def test_create_user():
     assert response.status_code == 200
     assert response.json() == {
         "access_token": base64.b64decode(token).decode("utf8"),
-        "token_type": "Bearer"
+        "token_type": "Bearer",
     }
 
 
@@ -47,9 +45,9 @@ def test_read_segments():
     response = client.get("/segments")
     assert response.status_code == 200
     assert response.json() == {
-        'bbox': None,
-        'features': [],
-        'type': 'FeatureCollection'
+        "bbox": None,
+        "features": [],
+        "type": "FeatureCollection",
     }
 
 
@@ -69,26 +67,20 @@ def test_create_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": "handicap",
+                    "usage_restrictions": ["handicap"],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
-                    "no_parking_reason": "private_parking"
+                    "no_parking_reasons": ["private_parking"],
                 }
             ]
         },
         "geometry": {
             "coordinates": [
-                [
-                    13.43244105577469,
-                    52.54816979768233
-                ],
-                [
-                    13.43432933092117,
-                    52.54754673757979
-                ]
+                [13.43244105577469, 52.54816979768233],
+                [13.43432933092117, 52.54754673757979],
             ],
-            "type": "LineString"
-        }
+            "type": "LineString",
+        },
     }
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
@@ -108,14 +100,9 @@ def test_read_segments_with_bbox():
     )
     assert response.status_code == 200
     assert len(response.json()["features"]) == 1
-    assert response.json()["features"][0]["geometry"]["coordinates"] == [[
-            13.43244105577469,
-            52.54816979768233
-        ],
-        [
-            13.43432933092117,
-            52.54754673757979
-        ]
+    assert response.json()["features"][0]["geometry"]["coordinates"] == [
+        [13.43244105577469, 52.54816979768233],
+        [13.43432933092117, 52.54754673757979],
     ]
 
     # Test outside
@@ -128,9 +115,9 @@ def test_read_segments_with_bbox():
     )
     assert response.status_code == 200
     assert response.json() == {
-        'bbox': None,
-        'features': [],
-        'type': 'FeatureCollection'
+        "bbox": None,
+        "features": [],
+        "type": "FeatureCollection",
     }
 
 
@@ -138,9 +125,9 @@ def test_read_segments_with_exclude():
     response = client.get("/segments/?exclude=1")
     assert response.status_code == 200
     assert response.json() == {
-        'bbox': None,
-        'features': [],
-        'type': 'FeatureCollection'
+        "bbox": None,
+        "features": [],
+        "type": "FeatureCollection",
     }
 
 
@@ -148,14 +135,9 @@ def test_read_segment():
     response = client.get("/segments/1")
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    assert response.json()["geometry"]["coordinates"] == [[
-            13.43244105577469,
-            52.54816979768233
-        ],
-        [
-            13.43432933092117,
-            52.54754673757979
-        ]
+    assert response.json()["geometry"]["coordinates"] == [
+        [13.43244105577469, 52.54816979768233],
+        [13.43432933092117, 52.54754673757979],
     ]
 
 
@@ -176,10 +158,10 @@ def test_update_segment():
                     "marked": True,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": "handicap",
+                    "usage_restrictions": ["handicap"],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
-                    "no_parking_reason": "private_parking"
+                    "no_parking_reasons": ["private_parking"],
                 },
                 # Add a subsegment
                 {
@@ -193,26 +175,20 @@ def test_update_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": "handicap",
+                    "usage_restrictions": ["handicap"],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
-                    "no_parking_reason": "private_parking"
-                }
+                    "no_parking_reasons": ["private_parking"],
+                },
             ]
         },
         "geometry": {
             "coordinates": [
-                [
-                    13.43244105577469,
-                    52.54816979768233
-                ],
-                [
-                    13.43432933092117,
-                    52.54754673757970
-                ]
+                [13.43244105577469, 52.54816979768233],
+                [13.43432933092117, 52.54754673757970],
             ],
-            "type": "LineString"
-        }
+            "type": "LineString",
+        },
     }
     response = client.put("/segments/1", json.dumps(data))
     assert response.status_code == 200
@@ -220,6 +196,12 @@ def test_update_segment():
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 2
     assert response.json()["properties"]["subsegments"][0]["marked"]
+    assert response.json()["properties"]["subsegments"][0]["usage_restrictions"] == [
+        "handicap"
+    ]
+    assert response.json()["properties"]["subsegments"][0]["no_parking_reasons"] == [
+        "private_parking"
+    ]
 
 
 def test_delete_segment():

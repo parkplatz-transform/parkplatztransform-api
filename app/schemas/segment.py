@@ -26,12 +26,12 @@ class SubsegmentBase(BaseModel):
     marked: bool = False
     alignment: Alignment = Alignment.parallel
     duration_constraint: bool = False
-    usage_restrictions: Optional[UsageRestriction]
+    usage_restrictions: List[UsageRestriction] = []
     time_constraint: bool = False
     time_constraint_reason: Optional[str]
 
     # Public parking not allowed
-    no_parking_reason: Optional[NoParkingReason]
+    no_parking_reasons: List[NoParkingReason] = []
 
 
 class Subsegment(SubsegmentBase):
