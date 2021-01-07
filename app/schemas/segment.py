@@ -1,7 +1,7 @@
 from typing import Optional, List
 import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import LineString as PydanticLineString
@@ -32,6 +32,10 @@ class SubsegmentBase(BaseModel):
 
     # Public parking not allowed
     no_parking_reasons: List[NoParkingReason] = []
+
+    @validator('usage_restrictions', 'no_parking_reasons', pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class Subsegment(SubsegmentBase):
