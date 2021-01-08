@@ -70,7 +70,7 @@ def test_create_segment():
                     "usage_restrictions": ["handicap"],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
-                    "no_parking_reasons": ["private_parking"],
+                    "no_parking_reasons": [],
                 }
             ]
         },
@@ -87,6 +87,41 @@ def test_create_segment():
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 1
+
+
+def test_create_invalid_segment():
+    data = {
+        "type": "Feature",
+        "properties": {
+            "subsegments": [
+                {
+                    "parking_allowed": False,
+                    "order_number": 0,
+                    "length_in_meters": 0,
+                    "car_count": 0,
+                    "quality": 1,
+                    "fee": False,
+                    "street_location": "street",
+                    "marked": False,
+                    "alignment": "parallel",
+                    "duration_constraint": False,
+                    "usage_restrictions": ["handicap"],
+                    "time_constraint": False,
+                    "time_constraint_reason": "string",
+                    "no_parking_reasons": [],
+                }
+            ]
+        },
+        "geometry": {
+            "coordinates": [
+                [13.43244105577469, 52.54816979768233],
+                [13.43432933092117, 52.54754673757979],
+            ],
+            "type": "LineString",
+        },
+    }
+    response = client.post("/segments/", json.dumps(data))
+    assert response.status_code == 422
 
 
 def test_read_segments_with_bbox():
@@ -161,11 +196,11 @@ def test_update_segment():
                     "usage_restrictions": ["handicap"],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
-                    "no_parking_reasons": ["private_parking"],
+                    "no_parking_reasons": [],
                 },
                 # Add a subsegment
                 {
-                    "parking_allowed": True,
+                    "parking_allowed": False,
                     "order_number": 0,
                     "length_in_meters": 0,
                     "car_count": 0,
@@ -175,7 +210,7 @@ def test_update_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": ["handicap"],
+                    "usage_restrictions": [],
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": ["private_parking"],
@@ -199,7 +234,7 @@ def test_update_segment():
     assert response.json()["properties"]["subsegments"][0]["usage_restrictions"] == [
         "handicap"
     ]
-    assert response.json()["properties"]["subsegments"][0]["no_parking_reasons"] == [
+    assert response.json()["properties"]["subsegments"][1]["no_parking_reasons"] == [
         "private_parking"
     ]
 
