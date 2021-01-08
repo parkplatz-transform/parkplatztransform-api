@@ -39,10 +39,16 @@ class SubsegmentBase(BaseModel):
 
     @root_validator(pre=True)
     def enforce_parking_not_allowed(cls, values):
-        if values['parking_allowed']:
-            assert len(values['no_parking_reasons']) == 0, 'no_parking_reasons incompatible with parking_allowed=true'
+        if values["parking_allowed"]:
+            assert (
+                values["no_parking_reasons"] is None
+                or len(values["no_parking_reasons"]) == 0
+            ), "no_parking_reasons incompatible with parking_allowed=true"
         else:
-            assert len(values['usage_restrictions']) == 0, 'usage_restrictions incompatible with parking_allowed=false'
+            assert (
+                values["usage_restrictions"] is None
+                or len(values["usage_restrictions"]) == 0
+            ), "usage_restrictions incompatible with parking_allowed=false"
         return values
 
 
