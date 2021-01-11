@@ -104,6 +104,6 @@ The application is currently deployed on Heroku and depends on the following thi
 - Mailgun API for sending emails contains verification links
 - Heroku Postgres with the PostGIS extension installed
 
-These services should set their environment variables automatically.
+These services should set their environment variables automatically, if not add them manually in the dashboard.
 
 The application uses continuous integration and will automatically deploy the `main` branch on any commits.
