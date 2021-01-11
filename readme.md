@@ -92,7 +92,7 @@ __Caveats__: Changes to enums and `geoAlchemy2` fields currently require manual 
 
 ### Tests
 
-To run integration tests for the API endpoints run the following:
+To run integration tests for the API endpoints run the following (requires docker & docker-compose_):
 
 ```shell
 sh ./scripts/test.sh
