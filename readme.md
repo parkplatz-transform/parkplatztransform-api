@@ -90,6 +90,14 @@ sh ./scripts/migrate.sh
 
 __Caveats__: Changes to enums and `geoAlchemy2` fields currently require manual intervention.
 
+### Tests
+
+To run integration tests for the API endpoints run the following:
+
+```shell
+sh ./scripts/test.sh
+```
+
 ### Deployment
 
 The application is currently deployed on Heroku and depends on the following third-party services:
