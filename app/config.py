@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     mailgun_domain: str = ""
     jwt_algorithm: str = "HS256"
     frontend_url: str = "https://app.xtransform.org"
+    sentry_url: str = ""
 
     class Config:
         env_file = ".env"

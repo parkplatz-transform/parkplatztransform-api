@@ -11,5 +11,6 @@ alembic==1.4.3
 geojson-pydantic==0.2.1
 shapely==1.7.1
 uvicorn==0.12.2
+sentry-sdk==0.19.5
 pytest
 pytest-cov

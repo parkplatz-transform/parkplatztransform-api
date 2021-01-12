@@ -1,8 +1,15 @@
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import segments, users
 from .open_api import custom_openapi
+from .config import get_settings
+
+sentry_sdk.init(
+    get_settings().sentry_url,
+    traces_sample_rate=1.0
+)
 
 app = FastAPI()
 
