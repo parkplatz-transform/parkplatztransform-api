@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     mailgun_api_key: str = ""
     mailgun_domain: str = ""
     jwt_algorithm: str = "HS256"
-    frontend_url: str = "https://pt.moewencloud.de"
+    frontend_url: str = "https://app.xtransform.org"
 
     class Config:
         env_file = ".env"
