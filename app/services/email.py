@@ -13,7 +13,7 @@ class EmailService:
 
     def send_email_verification_link(self, email: str, token: str = ""):
         return requests.post(
-            f"https://api.mailgun.net/v3/{self.mailgun_domain}/messages",
+            f"https://api.eu.mailgun.net/v3/{self.mailgun_domain}/messages",
             auth=("api", self.mailgun_api_key),
             data={
                 "from": "Parkplatz Transform Verification verify@parkplatztransform.com",
