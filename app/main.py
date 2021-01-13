@@ -4,8 +4,8 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from .routers import segments, users
-from .open_api import custom_openapi
 from .config import get_settings
 
 settings = get_settings()
@@ -31,9 +31,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-app.openapi = lambda: custom_openapi(app)
-
+openapi_schema = get_openapi(
+    title="Parkplatz Transform",
+    version="1.0.0",
+    description="Parkplatz Transform API documentation",
+    routes=app.routes,
+)
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(users.router)
