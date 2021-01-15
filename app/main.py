@@ -39,8 +39,5 @@ app.include_router(users.router)
 app.include_router(segments.router)
 
 if settings.sentry_url:
-    init(
-        dsn=settings.sentry_url,
-        integrations=[SqlalchemyIntegration()]
-    )
+    init(dsn=settings.sentry_url, integrations=[SqlalchemyIntegration()])
     app = SentryAsgiMiddleware(app)

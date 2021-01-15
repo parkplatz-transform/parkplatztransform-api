@@ -6,7 +6,13 @@ from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import LineString as PydanticLineString
 
-from ..models import Alignment, StreetLocation, UserRestriction, NoParkingReason, AlternativeUsageReason
+from ..models import (
+    Alignment,
+    StreetLocation,
+    UserRestriction,
+    NoParkingReason,
+    AlternativeUsageReason,
+)
 
 
 class LineString(PydanticLineString):

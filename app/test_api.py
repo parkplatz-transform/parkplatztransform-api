@@ -232,8 +232,14 @@ def test_update_segment():
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 2
     assert response.json()["properties"]["subsegments"][0]["marked"]
-    assert response.json()["properties"]["subsegments"][0]["user_restrictions"] == "handicap"
-    assert response.json()["properties"]["subsegments"][0]["alternative_usage_reason"] == "market"
+    assert (
+        response.json()["properties"]["subsegments"][0]["user_restrictions"]
+        == "handicap"
+    )
+    assert (
+        response.json()["properties"]["subsegments"][0]["alternative_usage_reason"]
+        == "market"
+    )
     assert response.json()["properties"]["subsegments"][1]["no_parking_reasons"] == [
         "private_parking"
     ]

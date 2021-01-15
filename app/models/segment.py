@@ -85,8 +85,12 @@ class Subsegment(BaseMixin, Base):
     duration_constraint = Column(
         Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
     )
-    user_restrictions = Column(Enum(UserRestriction), CheckConstraint("parking_allowed=TRUE"))
-    alternative_usage_reason = Column(Enum(AlternativeUsageReason), CheckConstraint("parking_allowed=TRUE"))
+    user_restrictions = Column(
+        Enum(UserRestriction), CheckConstraint("parking_allowed=TRUE")
+    )
+    alternative_usage_reason = Column(
+        Enum(AlternativeUsageReason), CheckConstraint("parking_allowed=TRUE")
+    )
 
     time_constraint = Column(
         Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
