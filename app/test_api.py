@@ -67,7 +67,7 @@ def test_create_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": ["handicap"],
+                    "user_restrictions": "handicap",
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": [],
@@ -105,7 +105,7 @@ def test_create_invalid_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": ["handicap"],
+                    "user_restrictions": "handicap",
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": [],
@@ -193,7 +193,8 @@ def test_update_segment():
                     "marked": True,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": ["handicap"],
+                    "user_restrictions": "handicap",
+                    "alternative_usage_reason": "market",
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": [],
@@ -210,7 +211,7 @@ def test_update_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "usage_restrictions": [],
+                    "user_restrictions": None,
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": ["private_parking"],
@@ -231,9 +232,8 @@ def test_update_segment():
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 2
     assert response.json()["properties"]["subsegments"][0]["marked"]
-    assert response.json()["properties"]["subsegments"][0]["usage_restrictions"] == [
-        "handicap"
-    ]
+    assert response.json()["properties"]["subsegments"][0]["user_restrictions"] == "handicap"
+    assert response.json()["properties"]["subsegments"][0]["alternative_usage_reason"] == "market"
     assert response.json()["properties"]["subsegments"][1]["no_parking_reasons"] == [
         "private_parking"
     ]

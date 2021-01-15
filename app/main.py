@@ -1,4 +1,4 @@
-from sentry_sdk import init, capture_message
+from sentry_sdk import init
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from fastapi import FastAPI
@@ -10,10 +10,6 @@ from .config import get_settings
 
 settings = get_settings()
 
-init(
-    dsn=settings.sentry_url,
-    integrations=[SqlalchemyIntegration()]
-)
 
 app = FastAPI()
 
@@ -42,4 +38,9 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(users.router)
 app.include_router(segments.router)
 
-app = SentryAsgiMiddleware(app)
+if settings.sentry_url:
+    init(
+        dsn=settings.sentry_url,
+        integrations=[SqlalchemyIntegration()]
+    )
+    app = SentryAsgiMiddleware(app)

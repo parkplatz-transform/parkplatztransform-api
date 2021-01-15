@@ -32,7 +32,7 @@ class StreetLocation(str, enum.Enum):
     car_park = "car_park"
 
 
-class UsageRestriction(str, enum.Enum):
+class UserRestriction(str, enum.Enum):
     handicap = "handicap"
     residents = "residents"
     car_sharing = "car_sharing"
@@ -57,6 +57,15 @@ class NoParkingReason(str, enum.Enum):
     lane = "lane"
 
 
+class AlternativeUsageReason(str, enum.Enum):
+    bus_stop = "bus_stop"
+    bus_lane = "bus_lane"
+    market = "market"
+    lane = "lane"
+    taxi = "taxi"
+    other = "other"
+
+
 class Subsegment(BaseMixin, Base):
     __tablename__ = "subsegments"
 
@@ -76,9 +85,9 @@ class Subsegment(BaseMixin, Base):
     duration_constraint = Column(
         Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
     )
-    usage_restrictions = Column(
-        ARRAY(Enum(UsageRestriction)), CheckConstraint("parking_allowed=TRUE")
-    )
+    user_restrictions = Column(Enum(UserRestriction), CheckConstraint("parking_allowed=TRUE"))
+    alternative_usage_reason = Column(Enum(AlternativeUsageReason), CheckConstraint("parking_allowed=TRUE"))
+
     time_constraint = Column(
         Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
     )

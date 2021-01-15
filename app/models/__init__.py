@@ -4,6 +4,7 @@ from .segment import (
     Alignment,
     StreetLocation,
     Subsegment,
-    UsageRestriction,
+    UserRestriction,
+    AlternativeUsageReason,
     NoParkingReason,
 )

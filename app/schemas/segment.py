@@ -6,7 +6,7 @@ from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import LineString as PydanticLineString
 
-from ..models import Alignment, StreetLocation, UsageRestriction, NoParkingReason
+from ..models import Alignment, StreetLocation, UserRestriction, NoParkingReason, AlternativeUsageReason
 
 
 class LineString(PydanticLineString):
@@ -26,14 +26,15 @@ class SubsegmentBase(BaseModel):
     marked: bool = False
     alignment: Alignment = Alignment.parallel
     duration_constraint: bool = False
-    usage_restrictions: List[UsageRestriction] = []
+    user_restrictions: Optional[UserRestriction]
+    alternative_usage_reason: Optional[AlternativeUsageReason]
     time_constraint: bool = False
     time_constraint_reason: Optional[str]
 
     # Public parking not allowed
     no_parking_reasons: List[NoParkingReason] = []
 
-    @validator("usage_restrictions", "no_parking_reasons", pre=True)
+    @validator("no_parking_reasons", pre=True)
     def replace_none_with_empty_list(cls, value):
         return [] if value is None else value
 
@@ -41,14 +42,17 @@ class SubsegmentBase(BaseModel):
     def enforce_parking_not_allowed(cls, values):
         if values["parking_allowed"]:
             assert (
-                values["no_parking_reasons"] is None
+                values.get("no_parking_reasons") is None
                 or len(values["no_parking_reasons"]) == 0
             ), "no_parking_reasons incompatible with parking_allowed=true"
         else:
             assert (
-                values["usage_restrictions"] is None
-                or len(values["usage_restrictions"]) == 0
-            ), "usage_restrictions incompatible with parking_allowed=false"
+                values.get("alternative_usage_reason") is None
+            ), "alternative_usage_reason incompatible with parking_allowed=false"
+            assert (
+                values.get("user_restrictions") is None
+                or len(values["user_restrictions"]) == 0
+            ), "user_restrictions incompatible with parking_allowed=false"
         return values
 
 
