@@ -16,15 +16,15 @@ class EmailService:
             f"https://api.eu.mailgun.net/v3/{self.mailgun_domain}/messages",
             auth=("api", self.mailgun_api_key),
             data={
-                "from": "Parkplatz Transform Verification verify@parkplatztransform.com",
+                "from": f"Parkplatz Transform noreply@{self.base_url}",
                 "to": [email],
-                "subject": "Please verify your email address",
+                "subject": "Verifizierung deiner E-Mail Adresse erforderlich",
                 "text": f"""
-                Production URL:
-                {self.base_url}/verify-token/?code={token}&email={email}
-                
-                Development URL:
-                http://localhost:3000/verify-token/?code={token}&email={email}
+                Hallo lieber PTler,
+                um dich einzuloggen, klicke bitte auf diesen Link: {self.base_url}/verify-token/?code={token}&email={email}
+                Viel Erfolg!
+
+                PS: Entwickler klicken während der Entwicklung hier: http://localhost:3000/verify-token/?code={token}&email={email}
                 """,
             },
         )
