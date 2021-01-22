@@ -71,8 +71,8 @@ class Subsegment(BaseMixin, Base):
 
     parking_allowed = Column(Boolean, nullable=False)
     order_number = Column(Integer, nullable=False)
-    length_in_meters = Column(Numeric(precision=2), default=0.00, nullable=False)
-    car_count = Column(Integer, default=0, nullable=False)
+    length_in_meters = Column(Numeric(precision=2))
+    car_count = Column(Integer)
     quality = Column(Integer, default=0, nullable=False)  # TODO: what actually is this?
 
     # Public parking allowed
