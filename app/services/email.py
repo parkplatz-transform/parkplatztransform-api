@@ -12,11 +12,11 @@ class EmailService:
     token_link: str = ""
 
     def send_email_verification_link(self, email: str, token: str = ""):
-        return requests.post(
+        req = requests.post(
             f"https://api.eu.mailgun.net/v3/{self.mailgun_domain}/messages",
             auth=("api", self.mailgun_api_key),
             data={
-                "from": f"Parkplatz Transform noreply@{self.base_url}",
+                "from": f"ParkplatzTransform noreply@xtransform.org",
                 "to": [email],
                 "subject": "Verifizierung deiner E-Mail Adresse erforderlich",
                 "text": f"""
@@ -28,3 +28,6 @@ class EmailService:
                 """,
             },
         )
+        if req.status_code != 200:
+            return Exception(req.content)
+        return req
