@@ -22,8 +22,8 @@ class LineString(PydanticLineString):
 class SubsegmentBase(BaseModel):
     parking_allowed: bool = True
     order_number: int = 0
-    length_in_meters: float = 0
-    car_count: int = 0
+    length_in_meters: Optional[float]
+    car_count: Optional[int]
     quality: int = 1
 
     # Public parking allowed
