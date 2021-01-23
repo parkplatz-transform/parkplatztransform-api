@@ -96,7 +96,7 @@ def delete_segment(segment_id: int, db: Session = Depends(get_db)):
 
 @router.put(
     "/segments/{segment_id}",
-    response_model=schemas.SegmentUpdate,
+    response_model=schemas.Segment,
     dependencies=[Depends(verify_token)],
 )
 def update_segment(

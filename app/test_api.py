@@ -228,6 +228,7 @@ def test_update_segment():
     }
     response = client.put("/segments/1", json.dumps(data))
     assert response.status_code == 200
+    assert response.json()["id"] == 1
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 2
