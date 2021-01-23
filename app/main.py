@@ -17,6 +17,7 @@ origins = [
     "https://pt.moewencloud.de",
     "https://app.xtransform.org",
     "http://localhost:3000",
+    "*.netlify.app"
 ]
 
 app.add_middleware(
