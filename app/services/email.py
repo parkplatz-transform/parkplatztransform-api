@@ -16,7 +16,7 @@ class EmailService:
             f"https://api.eu.mailgun.net/v3/{self.mailgun_domain}/messages",
             auth=("api", self.mailgun_api_key),
             data={
-                "from": f"ParkplatzTransform noreply@xtransform.org",
+                "from": f"ParkplatzTransform noreply@mg.xtransform.org",
                 "to": [email],
                 "subject": "Verifizierung deiner E-Mail Adresse erforderlich",
                 "text": f"""
