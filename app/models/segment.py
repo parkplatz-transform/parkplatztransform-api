@@ -69,7 +69,7 @@ class AlternativeUsageReason(str, enum.Enum):
 class Subsegment(BaseMixin, Base):
     __tablename__ = "subsegments"
 
-    parking_allowed = Column(Boolean, nullable=False)
+    parking_allowed = Column(Boolean, nullable=True)
     order_number = Column(Integer, nullable=False)
     length_in_meters = Column(Numeric(precision=2))
     car_count = Column(Integer)
@@ -80,10 +80,10 @@ class Subsegment(BaseMixin, Base):
     street_location = Column(
         Enum(StreetLocation), CheckConstraint("parking_allowed=TRUE")
     )
-    marked = Column(Boolean, CheckConstraint("parking_allowed=TRUE"))
+    marked = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True)
     alignment = Column(Enum(Alignment), CheckConstraint("parking_allowed=TRUE"))
     duration_constraint = Column(
-        Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
+        Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True
     )
     user_restrictions = Column(
         Enum(UserRestriction), CheckConstraint("parking_allowed=TRUE")
@@ -93,7 +93,7 @@ class Subsegment(BaseMixin, Base):
     )
 
     time_constraint = Column(
-        Boolean, CheckConstraint("parking_allowed=TRUE"), default=False, nullable=False
+        Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True
     )
     time_constraint_reason = Column(Text, CheckConstraint("parking_allowed=TRUE"))
 

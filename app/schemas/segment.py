@@ -27,14 +27,14 @@ class SubsegmentBase(BaseModel):
     quality: int = 1
 
     # Public parking allowed
-    fee: bool = False
+    fee: Optional[bool]
     street_location: StreetLocation = StreetLocation.street
-    marked: bool = False
+    marked: Optional[bool]
     alignment: Alignment = Alignment.parallel
-    duration_constraint: bool = False
+    duration_constraint: Optional[bool]
     user_restrictions: Optional[UserRestriction]
     alternative_usage_reason: Optional[AlternativeUsageReason]
-    time_constraint: bool = False
+    time_constraint: Optional[bool]
     time_constraint_reason: Optional[str]
 
     # Public parking not allowed
