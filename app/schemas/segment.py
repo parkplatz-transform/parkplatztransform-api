@@ -28,9 +28,9 @@ class SubsegmentBase(BaseModel):
 
     # Public parking allowed
     fee: Optional[bool]
-    street_location: StreetLocation = StreetLocation.street
+    street_location: Optional[StreetLocation] = StreetLocation.street
     marked: Optional[bool]
-    alignment: Alignment = Alignment.parallel
+    alignment: Optional[Alignment] = Alignment.parallel
     duration_constraint: Optional[bool]
     user_restrictions: Optional[UserRestriction]
     alternative_usage_reason: Optional[AlternativeUsageReason]
