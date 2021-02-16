@@ -207,7 +207,7 @@ def test_update_segment():
                     "car_count": 0,
                     "quality": 1,
                     "fee": False,
-                    "street_location": "street",
+                    "street_location": "unknown",
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
@@ -233,6 +233,7 @@ def test_update_segment():
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 2
     assert response.json()["properties"]["subsegments"][0]["marked"]
+    assert response.json()["properties"]["subsegments"][1]["street_location"] is None
     assert (
         response.json()["properties"]["subsegments"][0]["user_restrictions"]
         == "handicap"
