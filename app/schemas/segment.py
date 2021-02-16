@@ -28,9 +28,9 @@ class SubsegmentBase(BaseModel):
 
     # Public parking allowed
     fee: Optional[bool]
-    street_location: Optional[StreetLocation] = StreetLocation.street
+    street_location: Optional[StreetLocation]
     marked: Optional[bool]
-    alignment: Optional[Alignment] = Alignment.parallel
+    alignment: Optional[Alignment]
     duration_constraint: Optional[bool]
     user_restrictions: Optional[UserRestriction]
     alternative_usage_reason: Optional[AlternativeUsageReason]
@@ -43,6 +43,10 @@ class SubsegmentBase(BaseModel):
     @validator("no_parking_reasons", pre=True)
     def replace_none_with_empty_list(cls, value):
         return [] if value is None else value
+
+    @validator("street_location", "alignment", "user_restrictions", "alternative_usage_reason", pre=True)
+    def replace_unknown_with_null(cls, value):
+        return None if value is "unknown" else value
 
     @root_validator(pre=True)
     def enforce_parking_not_allowed(cls, values):
