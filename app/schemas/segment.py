@@ -59,10 +59,6 @@ class SubsegmentBase(BaseModel):
             assert (
                 values.get("alternative_usage_reason") is None
             ), "alternative_usage_reason incompatible with parking_allowed=false"
-            assert (
-                values.get("user_restrictions") is None
-                or len(values["user_restrictions"]) == 0
-            ), "user_restrictions incompatible with parking_allowed=false"
         return values
 
 
