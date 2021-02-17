@@ -33,6 +33,7 @@ class StreetLocation(str, enum.Enum):
 
 
 class UserRestriction(str, enum.Enum):
+    all_users = "all_users"
     handicap = "handicap"
     residents = "residents"
     car_sharing = "car_sharing"
