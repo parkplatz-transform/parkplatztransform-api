@@ -84,7 +84,7 @@ class Subsegment(BaseMixin, Base):
     marked = Column(Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True)
     alignment = Column(Enum(Alignment), CheckConstraint("parking_allowed=TRUE"))
     duration_constraint = Column(
-        Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True
+        Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True, default=None
     )
     user_restrictions = Column(
         Enum(UserRestriction), CheckConstraint("parking_allowed=TRUE")
