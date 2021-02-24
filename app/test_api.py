@@ -89,41 +89,6 @@ def test_create_segment():
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 
-def test_create_invalid_segment():
-    data = {
-        "type": "Feature",
-        "properties": {
-            "subsegments": [
-                {
-                    "parking_allowed": False,
-                    "order_number": 0,
-                    "length_in_meters": 0,
-                    "car_count": 0,
-                    "quality": 1,
-                    "fee": False,
-                    "street_location": "street",
-                    "marked": False,
-                    "alignment": "parallel",
-                    "duration_constraint": False,
-                    "user_restrictions": "handicap",
-                    "time_constraint": False,
-                    "time_constraint_reason": "string",
-                    "no_parking_reasons": [],
-                }
-            ]
-        },
-        "geometry": {
-            "coordinates": [
-                [13.43244105577469, 52.54816979768233],
-                [13.43432933092117, 52.54754673757979],
-            ],
-            "type": "LineString",
-        },
-    }
-    response = client.post("/segments/", json.dumps(data))
-    assert response.status_code == 422
-
-
 def test_read_segments_with_bbox():
     # Test inside
     response = client.get(

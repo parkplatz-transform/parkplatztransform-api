@@ -44,7 +44,7 @@ class SubsegmentBase(BaseModel):
     def replace_none_with_empty_list(cls, value):
         return [] if value is None else value
 
-    @validator("street_location", "alignment", "user_restrictions", "alternative_usage_reason", pre=True)
+    @validator("street_location", "alignment", "alternative_usage_reason", pre=True)
     def replace_unknown_with_null(cls, value):
         return None if value == "unknown" else value
 

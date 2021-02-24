@@ -39,6 +39,7 @@ class UserRestriction(str, enum.Enum):
     car_sharing = "car_sharing"
     gender = "gender"
     electric_cars = "electric_cars"
+    unknown = "unknown"
     other = "other"
 
 
@@ -50,11 +51,13 @@ class NoParkingReason(str, enum.Enum):
     tree = "tree"
     bike_racks = "bike_racks"
     pedestrian_crossing = "pedestrian_crossing"
+    pedestrian_zone = "pedestrian_zone"
     driveway = "driveway"
     loading_zone = "loading_zone"
     standing_zone = "standing_zone"
     emergency_exit = "emergency_exit"
     lowered_curb_side = "lowered_curb_side"
+    no_stopping = "no_stopping"
     lane = "lane"
 
 
@@ -64,6 +67,7 @@ class AlternativeUsageReason(str, enum.Enum):
     market = "market"
     lane = "lane"
     taxi = "taxi"
+    loading = "loading"
     other = "other"
 
 
@@ -97,6 +101,8 @@ class Subsegment(BaseMixin, Base):
         Boolean, CheckConstraint("parking_allowed=TRUE"), nullable=True
     )
     time_constraint_reason = Column(Text, CheckConstraint("parking_allowed=TRUE"))
+
+    duration_constraint_details = Column(Text)
 
     # Public parking not allowed
     no_parking_reasons = Column(
