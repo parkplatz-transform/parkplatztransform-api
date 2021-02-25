@@ -2,33 +2,14 @@ import time
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.services import decode_jwt
 from app import schemas, controllers
 from app.database import get_db
 from app.strings import validation
+from app.sessions import get_session
 
 router = APIRouter()
-bearer_scheme = HTTPBearer()
-
-
-async def get_user_from_token(
-    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-):
-    try:
-        return decode_jwt(token.credentials)
-    except Exception as e:
-        raise HTTPException(401, validation["unauthorized"])
-
-
-async def verify_token(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
-    try:
-        token_metadata = decode_jwt(token.credentials)
-        assert token_metadata["exp"] > time.time()
-    except Exception as e:
-        raise HTTPException(401, validation["unauthorized"])
 
 
 def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
@@ -36,7 +17,7 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
     return list(zip(spl[0::2], spl[1::2]))
 
 
-@router.get("/segments/", response_model=schemas.SegmentCollection)
+@router.get("/segments/",  response_model=schemas.SegmentCollection)
 async def read_segments(
     bbox: Optional[str] = None,
     exclude: Optional[str] = None,
@@ -72,20 +53,19 @@ def read_segment(segment_id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/segments/", response_model=schemas.Segment, dependencies=[Depends(verify_token)]
+    "/segments/", response_model=schemas.Segment, dependencies=[Depends(get_session)]
 )
 def create_segment(
     segment: schemas.SegmentCreate,
     db: Session = Depends(get_db),
-    token=Depends(get_user_from_token),
+    user: schemas.User = Depends(get_session),
 ):
-    email = token["sub"]
-    created_recording = controllers.create_segment(db=db, segment=segment, email=email)
+    created_recording = controllers.create_segment(db=db, segment=segment, user_id=user.id)
     return created_recording
 
 
 @router.delete(
-    "/segments/{segment_id}", response_model=int, dependencies=[Depends(verify_token)]
+    "/segments/{segment_id}", response_model=int, dependencies=[Depends(get_session)]
 )
 def delete_segment(segment_id: int, db: Session = Depends(get_db)):
     result = controllers.delete_segment(db=db, segment_id=segment_id)
@@ -97,17 +77,16 @@ def delete_segment(segment_id: int, db: Session = Depends(get_db)):
 @router.put(
     "/segments/{segment_id}",
     response_model=schemas.Segment,
-    dependencies=[Depends(verify_token)],
+    dependencies=[Depends(get_session)],
 )
 def update_segment(
     segment_id: int,
     segment: schemas.SegmentUpdate,
     db: Session = Depends(get_db),
-    token=Depends(get_user_from_token),
+    session=Depends(get_session),
 ):
-    email = token["sub"]
     result = controllers.update_segment(
-        db=db, segment_id=segment_id, segment=segment, email=email
+        db=db, segment_id=segment_id, segment=segment, user_id=session.id
     )
     if not result:
         HTTPException(status_code=404)

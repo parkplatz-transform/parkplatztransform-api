@@ -1,4 +1,4 @@
-from typing import Optional, List, Set
+from typing import Optional, List
 import datetime
 
 from pydantic import BaseModel, validator, root_validator
@@ -36,6 +36,7 @@ class SubsegmentBase(BaseModel):
     alternative_usage_reason: Optional[AlternativeUsageReason]
     time_constraint: Optional[bool]
     time_constraint_reason: Optional[str]
+    duration_constraint_details: Optional[str]
 
     # Public parking not allowed
     no_parking_reasons: List[NoParkingReason] = []

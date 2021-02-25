@@ -44,14 +44,13 @@ def get_segments(
 
 
 def create_segment(
-    db: Session, segment: schemas.SegmentCreate, email: str
+    db: Session, segment: schemas.SegmentCreate, user_id: int
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
     )
 
-    user = get_user_by_email(db, email)
-    db_segment = Segment(geometry=geometry, owner=user, owner_id=user.id)
+    db_segment = Segment(geometry=geometry, owner_id=user_id)
 
     for subsegment in segment.properties.subsegments:
         db_prop = Subsegment(
@@ -66,13 +65,12 @@ def create_segment(
 
 
 def update_segment(
-    db: Session, segment_id: int, segment: schemas.SegmentCreate, email: str
+    db: Session, segment_id: int, segment: schemas.SegmentCreate, user_id: int
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
     )
 
-    user = get_user_by_email(db, email)
     db_segment = db.query(Segment).get(segment_id)
 
     # Write new subsegments
@@ -106,7 +104,7 @@ def update_segment(
         )
 
     db_segment.geometry = geometry
-    db_segment.owner_id = user.id
+    db_segment.owner_id = user_id
 
     db.commit()
     db.refresh(db_segment)

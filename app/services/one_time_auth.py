@@ -7,9 +7,7 @@ import time
 import jwt
 from typing import Optional
 
-from app.config import get_settings
-
-settings = get_settings()
+from app.config import settings
 
 
 def decode_jwt(token: str) -> dict:

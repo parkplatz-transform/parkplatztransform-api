@@ -1,0 +1,36 @@
+import json
+from uuid import uuid4
+from typing import Optional
+
+from fastapi import Depends, HTTPException, Cookie
+
+from app.strings import validation
+from app.services.redis_cache import redis_cache
+from app.schemas import User
+from app.config import settings
+
+
+class SessionStorage:
+    async def create_session(self, user: User):
+        session_id = uuid4().hex
+        session_dict = {
+            'user_id': user.id,
+            'user_email': user.email,
+            'user_permission': 0  # TODO: implement this
+        }
+        await redis_cache.set(session_id, json.dumps(session_dict), expires=settings.session_expiry)
+        return session_id
+
+    async def get_session(self, id: str):
+        return await redis_cache.get(id)
+
+    async def delete_session(self, id: str):
+        await redis_cache.delete(id)
+
+
+async def get_session(session_id: Optional[str] = Cookie(None), session_storage: SessionStorage = Depends(SessionStorage)) -> Optional[User]:
+    if session_id:
+        data = json.loads(await session_storage.get_session(session_id))
+        return User(id=data['user_id'], email=data['user_email'])
+    else:
+        raise HTTPException(401, validation["unauthorized"])

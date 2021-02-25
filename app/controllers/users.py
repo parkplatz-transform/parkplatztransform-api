@@ -13,7 +13,7 @@ def get_user_by_email(db: Session, email: str) -> User:
     return db.query(User).filter(User.email == email).first()
 
 
-def create_user(db: Session, user: schemas.User) -> User:
+def create_user(db: Session, user: schemas.UserBase) -> User:
     db_user = User(email=user.email)
     db.add(db_user)
     db.commit()
