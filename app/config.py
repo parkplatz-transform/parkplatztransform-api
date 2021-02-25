@@ -1,4 +1,3 @@
-from functools import lru_cache
 from pydantic import BaseSettings
 
 
@@ -7,17 +6,17 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@postgres/postgres"
     token_ttl_minutes: str = 14 * 24 * 60  # 2 weeks
     token_issue_ttl_seconds: str = 2 * 60 * 60  # 2 hours
-    base_url: str = "localhost:8023"
+    base_url: str = "http://localhost:8023"
     mailgun_api_key: str = ""
     mailgun_domain: str = ""
     jwt_algorithm: str = "HS256"
     frontend_url: str = "https://app.xtransform.org"
     sentry_url: str = ""
+    session_expiry: int = 1 * 24 * 60 * 60  # 1 Day
+    redis_url: str = "redis://redis:6379"
 
     class Config:
         env_file = ".env"
 
 
-@lru_cache()
-def get_settings():
-    return Settings()
+settings = Settings()

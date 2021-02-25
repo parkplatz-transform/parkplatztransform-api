@@ -6,19 +6,17 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from .routers import segments, users
-from .config import get_settings
-
-settings = get_settings()
-
+from .config import settings
+from .sessions import redis_cache
 
 app = FastAPI()
 
 origins = [
-    "https://pt.moewencloud.de",
     "https://app.xtransform.org",
     "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:8023",
     "http://192.168.0.40:3000",
-    "*.netlify.app"
 ]
 
 app.add_middleware(
@@ -39,6 +37,10 @@ openapi_schema = get_openapi(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(users.router)
 app.include_router(segments.router)
+
+@app.on_event('startup')
+async def starup_event():
+    await redis_cache.init_cache()
 
 if settings.sentry_url:
     init(dsn=settings.sentry_url, integrations=[SqlalchemyIntegration()])
