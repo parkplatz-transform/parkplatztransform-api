@@ -22,7 +22,7 @@ class EmailService:
                 um dich einzuloggen, klicke bitte auf diesen Link: {self.base_url}/users/verify/?code={token}&email={email}
                 Viel Erfolg!
 
-                PS: Entwickler klicken während der Entwicklung hier: {self.base_url}/users/verify/?code={token}&email={email}&dev
+                PS: Entwickler klicken während der Entwicklung hier: http://localhost:3000/users/verify/?code={token}&email={email}&dev=true
                 """,
             },
         )
