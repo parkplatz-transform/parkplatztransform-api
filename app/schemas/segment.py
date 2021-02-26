@@ -68,18 +68,22 @@ class Subsegment(SubsegmentBase):
     created_at: Optional[datetime.datetime]
     modified_at: Optional[datetime.datetime]
 
+    class Config:
+        orm_mode = True
+
 
 class SubsegmentsBase(BaseModel):
     subsegments: List[SubsegmentBase]
 
 
-class Subsegments(BaseModel):
+class Properties(BaseModel):
     subsegments: List[Subsegment]
+    owner_id: int
 
 
 class Segment(Feature):
     id: int
-    properties: Subsegments
+    properties: Properties
     geometry: LineString
 
     class Config:
@@ -88,6 +92,9 @@ class Segment(Feature):
 
 class SegmentCollection(FeatureCollection):
     features: List[Segment]
+
+    class Config:
+        orm_mode = True
 
 
 class SegmentBase(BaseModel):
@@ -104,4 +111,4 @@ class SegmentCreate(BaseModel):
 
 
 class SegmentUpdate(SegmentCreate):
-    properties: Subsegments
+    properties: Properties

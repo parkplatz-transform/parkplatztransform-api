@@ -13,12 +13,10 @@ from app.services import OneTimeAuth, EmailService
 from app.strings import validation
 from app.sessions import SessionStorage, get_session
 from app.config import settings
-from app.models.user import access
 
 
 router = APIRouter()
 email_service = EmailService()
-
 one_time_auth = OneTimeAuth()
 
 
@@ -35,7 +33,7 @@ def send_magic_link(user: schemas.UserBase, background_tasks: BackgroundTasks):
 async def verify_magic_link(
         code: str,
         email: str,
-        dev: bool,
+        dev: bool = False,
         db: Session = Depends(get_db),
         session_storage: SessionStorage = Depends(SessionStorage)
 ):
@@ -51,16 +49,27 @@ async def verify_magic_link(
 
     response = RedirectResponse(settings.frontend_url)
     response.set_cookie(
-        key="session_id",
+        key=settings.session_identifier,
         value=session_id,
+        domain="localhost" if dev else settings.base_url,
         httponly=True,
         max_age=settings.session_expiry,
         samesite="strict",
-        secure=True
+        secure=False if dev else True
     )
     return response
 
 
-@router.get("/users/me/")
+@router.get("/users/me/", response_model=schemas.User)
 async def get_logged_in_user(session: Optional[schemas.UserBase] = Depends(get_session)):
     return session
+
+
+@router.post("/users/logout/")
+async def get_logged_in_user(
+        response: Response,
+        sessionid: Optional[str] = Cookie(None),
+        session_storage: SessionStorage = Depends(SessionStorage)
+    ):
+    await session_storage.delete_session(sessionid)
+    return response

@@ -1,24 +1,21 @@
 from typing import List, Tuple
 
-from sqlalchemy.orm import Session, noload
+from sqlalchemy.orm import Session, noload, joinedload
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
 
 from .. import schemas
 from ..models import Segment, Subsegment
-from .users import get_user_by_email
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
-    subsegments = []
-    if segment.subsegments:
-        subsegments = list(
-            map(lambda sub: schemas.Subsegment(**sub.__dict__), segment.subsegments)
-        )
     shape = to_shape(segment.geometry)
     return schemas.Segment(
         id=segment.id,
-        properties={"subsegments": subsegments},
+        properties={
+            "subsegments": segment.subsegments,
+            "owner_id": segment.owner_id,
+        },
         geometry={"coordinates": shape.coords[:]},
         bbox=shape.bounds,
     )
@@ -30,15 +27,16 @@ def get_segments(
     exclude: List[int] = None,
     details: bool = True,
 ) -> schemas.SegmentCollection:
-    segments = db.query(Segment)
+    segments = db.query(Segment).options(
+        joinedload(Segment.subsegments),
+        noload(Segment.subsegments if not details else None)
+    )
     if exclude:
         segments = segments.filter(Segment.id.notin_(exclude))
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = segments.filter(polygon.ST_Intersects(Segment.geometry))
-    if not details:
-        segments.options(noload(Segment.subsegments))
-    collection = list(map(lambda feat: serialize_segment(feat), segments.all()))
+    collection = list(map(lambda feat: serialize_segment(feat), segments))
     return schemas.SegmentCollection(features=collection)
 
 
