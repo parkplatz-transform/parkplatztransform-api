@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from sqlalchemy.orm import Session, noload
+from sqlalchemy.orm import Session, noload, joinedload
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
 
@@ -25,20 +25,21 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 
 
 def get_segments(
-    db: Session,
-    bbox: List[Tuple[float, float]] = None,
-    exclude: List[int] = None,
-    details: bool = True,
+        db: Session,
+        bbox: List[Tuple[float, float]] = None,
+        exclude: List[int] = None,
+        details: bool = True,
 ) -> schemas.SegmentCollection:
-    segments = db.query(Segment)
+    segments = db.query(Segment).options(
+        joinedload(Segment.subsegments),
+        noload(Segment.subsegments if not details else None)
+    )
     if exclude:
         segments = segments.filter(Segment.id.notin_(exclude))
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = segments.filter(polygon.ST_Intersects(Segment.geometry))
-    if not details:
-        segments.options(noload(Segment.subsegments))
-    collection = list(map(lambda feat: serialize_segment(feat), segments.all()))
+    collection = list(map(lambda feat: serialize_segment(feat), segments))
     return schemas.SegmentCollection(features=collection)
 
 
