@@ -18,6 +18,7 @@ class SessionStorage:
             'email': user.email,
             'permission_level': user.permission_level
         }
+        print("created new session", session_id)
         await redis_cache.set(session_id, json.dumps(session_dict), expires=settings.session_expiry)
         return session_id
 
