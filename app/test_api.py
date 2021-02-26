@@ -4,7 +4,8 @@ import json
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.routers.segments import verify_token, get_user_from_token
+from app.sessions import get_session, SessionStorage
+from app.schemas import User
 from app.services import OneTimeAuth
 
 
@@ -15,16 +16,16 @@ email = "testuser@email.com"
 token = OTA.generate_token(email)
 
 
-def get_user_from_token_mock():
-    return {"sub": email}
+def get_session_mock():
+    return User(id=1, email=email, permission_level=0)
+
+class SessionStorageMock():
+    async def create_session(self, user: User):
+        return {}
 
 
-def verify_token_mock():
-    return True
-
-
-app.dependency_overrides[get_user_from_token] = get_user_from_token_mock
-app.dependency_overrides[verify_token] = verify_token_mock
+app.dependency_overrides[get_session] = get_session_mock
+app.dependency_overrides[SessionStorage] = SessionStorageMock
 
 
 def test_docs():
@@ -33,22 +34,11 @@ def test_docs():
 
 
 def test_create_user():
-    response = client.get(f"/users/verify/?code={token}&email={email}")
+    client.get(f"/users/verify/?code={token}&email={email}")
+    response = client.get("/users/me")
     assert response.status_code == 200
-    assert response.json() == {
-        "access_token": base64.b64decode(token).decode("utf8"),
-        "token_type": "Bearer",
-    }
 
 
-def test_read_segments():
-    response = client.get("/segments")
-    assert response.status_code == 200
-    assert response.json() == {
-        "bbox": None,
-        "features": [],
-        "type": "FeatureCollection",
-    }
 
 
 def test_create_segment():
@@ -87,6 +77,20 @@ def test_create_segment():
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert len(response.json()["properties"]["subsegments"]) == 1
+
+
+def test_read_segments_with_options():
+    response = client.get("/segments")
+    assert response.status_code == 200
+    assert len(response.json()["features"]) == 1
+
+    response = client.get("/segments/?details=0")
+    assert response.status_code == 200
+    assert response.json()["features"][0]["properties"]["subsegments"] == []
+
+    response = client.get("/segments/?exclude=1")
+    assert response.status_code == 200
+    assert response.json()["features"] == []
 
 
 def test_read_segments_with_bbox():
@@ -192,6 +196,7 @@ def test_update_segment():
         },
     }
     response = client.put("/segments/1", json.dumps(data))
+    print(response.json())
     assert response.status_code == 200
     assert response.json()["id"] == 1
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
