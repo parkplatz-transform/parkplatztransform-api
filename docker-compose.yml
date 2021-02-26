@@ -5,7 +5,7 @@ services:
   postgres:
     restart: always
     container_name: "postgres"
-    image: "gangstead/postgis:13-3.1-arm"
+    image: "postgis/postgis:12-3.1-alpine"
     ports:
       - "54320:5432"
     environment:
