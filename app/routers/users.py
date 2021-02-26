@@ -49,10 +49,10 @@ async def verify_magic_link(
     response.set_cookie(
         key=settings.session_identifier,
         value=session_id,
-        domain="localhost" if dev else ".xtransform.org",
+        domain="localhost" if dev else "xtransform.org",
         httponly=True,
         max_age=settings.session_expiry,
-        samesite="strict",
+        samesite="lax",
         secure=False if dev else True
     )
     return response
