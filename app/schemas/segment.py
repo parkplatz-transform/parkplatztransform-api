@@ -78,7 +78,7 @@ class SubsegmentsBase(BaseModel):
 
 class Properties(BaseModel):
     subsegments: List[Subsegment]
-    owner_id: int
+    owner_id: Optional[int]
 
 
 class Segment(Feature):

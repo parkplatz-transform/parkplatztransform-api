@@ -14,9 +14,9 @@ class SessionStorage:
     async def create_session(self, user: User):
         session_id = uuid4().hex
         session_dict = {
-            'user_id': user.id,
-            'user_email': user.email,
-            'user_permission': 0  # TODO: implement this
+            'id': user.id,
+            'email': user.email,
+            'permission_level': user.permission_level
         }
         await redis_cache.set(session_id, json.dumps(session_dict), expires=settings.session_expiry)
         return session_id
@@ -36,7 +36,7 @@ async def get_session(
         session = await session_storage.get_session(sessionid)
         if session:
             data = json.loads(session)
-            return User(id=data['user_id'], email=data['user_email'])
+            return User(id=data['id'], email=data['email'])
         else:
             raise HTTPException(401, validation["unauthorized"])
     else:

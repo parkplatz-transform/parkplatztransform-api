@@ -1,21 +1,20 @@
 version: "3.8"
 services:
-  postgres_test:
-    restart: always
-    container_name: "postgres_test"
-    image: postgis/postgis
+  postgres:
+    container_name: "postgres"
+    image: "gangstead/postgis:13-3.1-arm"
     ports:
-      - "5432"
+      - "5432:5432"
     environment:
       POSTGRES_HOST_AUTH_METHOD: "trust"
-  api_tests:
-    container_name: "api_tests"
+  app:
+    container_name: "app"
     build: .
     environment:
       SECRET_KEY: "secrettestingkey"
-      DATABASE_URL: "postgresql://postgres:postgres@postgres_test/postgres"
+      DATABASE_URL: "postgresql://postgres:postgres@postgres/postgres"
     depends_on:
-      - postgres_test
+      - postgres
     ports:
       - "8024"
     volumes:
