@@ -28,9 +28,16 @@ class SessionStorage:
         await redis_cache.delete(id)
 
 
-async def get_session(session_id: Optional[str] = Cookie(None), session_storage: SessionStorage = Depends(SessionStorage)) -> Optional[User]:
-    if session_id:
-        data = json.loads(await session_storage.get_session(session_id))
-        return User(id=data['user_id'], email=data['user_email'])
+async def get_session(
+        sessionid: Optional[str] = Cookie(None),
+        session_storage: SessionStorage = Depends(SessionStorage)
+    ) -> Optional[User]:
+    if sessionid:
+        session = await session_storage.get_session(sessionid)
+        if session:
+            data = json.loads(session)
+            return User(id=data['user_id'], email=data['user_email'])
+        else:
+            raise HTTPException(401, validation["unauthorized"])
     else:
         raise HTTPException(401, validation["unauthorized"])

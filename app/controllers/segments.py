@@ -6,19 +6,16 @@ from shapely.geometry import LineString, Polygon
 
 from .. import schemas
 from ..models import Segment, Subsegment
-from .users import get_user_by_email
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
-    subsegments = []
-    if segment.subsegments:
-        subsegments = list(
-            map(lambda sub: schemas.Subsegment(**sub.__dict__), segment.subsegments)
-        )
     shape = to_shape(segment.geometry)
     return schemas.Segment(
         id=segment.id,
-        properties={"subsegments": subsegments},
+        properties={
+            "subsegments": segment.subsegments,
+            "owner_id": segment.owner_id,
+        },
         geometry={"coordinates": shape.coords[:]},
         bbox=shape.bounds,
     )
