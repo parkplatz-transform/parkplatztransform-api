@@ -45,7 +45,7 @@ async def verify_magic_link(
 
     session_id = await session_storage.create_session(user)
 
-    response = RedirectResponse(settings.frontend_url)
+    response = RedirectResponse("http://localhost:3000" if dev else settings.frontend_url)
     response.set_cookie(
         key=settings.session_identifier,
         value=session_id,
