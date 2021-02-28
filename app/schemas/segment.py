@@ -45,10 +45,6 @@ class SubsegmentBase(BaseModel):
     def replace_none_with_empty_list(cls, value):
         return [] if value is None else value
 
-    @validator("street_location", "alignment", "alternative_usage_reason", pre=True)
-    def replace_unknown_with_null(cls, value):
-        return None if value == "unknown" else value
-
     @root_validator(pre=True)
     def enforce_parking_not_allowed(cls, values):
         if values["parking_allowed"]:

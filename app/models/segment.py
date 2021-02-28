@@ -21,6 +21,7 @@ class Alignment(str, enum.Enum):
     parallel = "parallel"
     perpendicular = "perpendicular"
     diagonal = "diagonal"
+    unknown = "unknown"
 
 
 class StreetLocation(str, enum.Enum):
@@ -30,6 +31,7 @@ class StreetLocation(str, enum.Enum):
     parking_bay = "parking_bay"
     middle = "middle"
     car_park = "car_park"
+    unknown = "unknown"
 
 
 class UserRestriction(str, enum.Enum):
