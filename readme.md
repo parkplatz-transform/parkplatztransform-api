@@ -103,6 +103,7 @@ sh ./scripts/test.sh
 The application is currently deployed on Heroku and depends on the following third-party services:
 - Mailgun API for sending emails contains verification links
 - Heroku Postgres with the PostGIS extension installed
+- Heroku Redis for session storage
 
 These services should set their environment variables automatically, if not add them manually in the dashboard.
 
