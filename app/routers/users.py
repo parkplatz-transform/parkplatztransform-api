@@ -43,8 +43,6 @@ async def verify_magic_link(
     if not user:
         user = controllers.create_user(db, schemas.UserBase(email=decoded["sub"]))
 
-    #user.id = user.id.hex
-
     session_id = await session_storage.create_session(user)
 
     response = RedirectResponse(

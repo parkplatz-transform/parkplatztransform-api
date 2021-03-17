@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Tuple
 
 from sqlalchemy.orm import Session, noload, joinedload
@@ -53,6 +54,9 @@ def create_segment(
     db_segment.geometry = geometry
     db_segment.owner_id = user_id
 
+    db.add(db_segment)
+    db.commit()
+    db.refresh(db_segment)
     for subsegment in segment.properties.subsegments:
         if subsegment.parking_allowed:
             db_prop = SubsegmentParking(
@@ -64,10 +68,8 @@ def create_segment(
                 segment_id=db_segment.id, subsegment=subsegment
             )
             db.add(db_prop)
-
-    db.add(db_segment)
+    
     db.commit()
-    db.refresh(db_segment)
     return serialize_segment(db_segment)
 
 
