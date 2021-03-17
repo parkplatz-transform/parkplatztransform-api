@@ -44,7 +44,7 @@ async def read_segments(
     "/segments/{segment_id}",
     response_model=schemas.Segment,
 )
-def read_segment(segment_id: int, db: Session = Depends(get_db)):
+def read_segment(segment_id: str, db: Session = Depends(get_db)):
     segment = controllers.get_segment(db=db, segment_id=segment_id)
     if not segment:
         HTTPException(status_code=404)
@@ -65,7 +65,7 @@ def create_segment(
 
 
 @router.delete(
-    "/segments/{segment_id}", response_model=int, dependencies=[Depends(get_session)]
+    "/segments/{segment_id}", response_model=str, dependencies=[Depends(get_session)]
 )
 def delete_segment(segment_id: int, db: Session = Depends(get_db)):
     result = controllers.delete_segment(db=db, segment_id=segment_id)
@@ -80,7 +80,7 @@ def delete_segment(segment_id: int, db: Session = Depends(get_db)):
     dependencies=[Depends(get_session)],
 )
 def update_segment(
-    segment_id: int,
+    segment_id: str,
     segment: schemas.SegmentUpdate,
     db: Session = Depends(get_db),
     session=Depends(get_session),
