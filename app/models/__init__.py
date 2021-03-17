@@ -1,10 +1,11 @@
 from .user import User
-from .segment import (
-    Segment,
+from .segment import Segment
+from .subsegment import (
     Alignment,
     StreetLocation,
-    Subsegment,
     UserRestriction,
     AlternativeUsageReason,
     NoParkingReason,
+    SubsegmentParking,
+    SubsegmentNonParking,
 )

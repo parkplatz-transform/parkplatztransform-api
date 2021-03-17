@@ -1,4 +1,4 @@
-import base64
+import uuid
 import json
 
 from fastapi.testclient import TestClient
@@ -15,11 +15,14 @@ OTA = OneTimeAuth()
 email = "testuser@email.com"
 token = OTA.generate_token(email)
 
+user_id = uuid.uuid4().hex
+
 
 def get_session_mock():
-    return User(id=1, email=email, permission_level=0)
+    return User(id=user_id, email=email, permission_level=0)
 
-class SessionStorageMock():
+
+class SessionStorageMock:
     async def create_session(self, user: User):
         return {}
 
@@ -37,8 +40,6 @@ def test_create_user():
     client.get(f"/users/verify/?code={token}&email={email}")
     response = client.get("/users/me")
     assert response.status_code == 200
-
-
 
 
 def test_create_segment():

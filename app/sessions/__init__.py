@@ -14,12 +14,14 @@ class SessionStorage:
     async def create_session(self, user: User):
         session_id = uuid4().hex
         session_dict = {
-            'id': user.id,
-            'email': user.email,
-            'permission_level': user.permission_level
+            "id": user.id,
+            "email": user.email,
+            "permission_level": user.permission_level,
         }
         print("created new session", session_id)
-        await redis_cache.set(session_id, json.dumps(session_dict), expires=settings.session_expiry)
+        await redis_cache.set(
+            session_id, json.dumps(session_dict), expires=settings.session_expiry
+        )
         return session_id
 
     async def get_session(self, id: str):
@@ -30,14 +32,14 @@ class SessionStorage:
 
 
 async def get_session(
-        sessionid: Optional[str] = Cookie(None),
-        session_storage: SessionStorage = Depends(SessionStorage)
-    ) -> Optional[User]:
+    sessionid: Optional[str] = Cookie(None),
+    session_storage: SessionStorage = Depends(SessionStorage),
+) -> Optional[User]:
     if sessionid:
         session = await session_storage.get_session(sessionid)
         if session:
             data = json.loads(session)
-            return User(id=data['id'], email=data['email'])
+            return User(id=data["id"], email=data["email"])
         else:
             raise HTTPException(401, validation["unauthorized"])
     else:

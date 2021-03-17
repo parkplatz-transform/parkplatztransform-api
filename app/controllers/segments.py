@@ -5,7 +5,7 @@ from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
 
 from .. import schemas
-from ..models import Segment, Subsegment
+from ..models import Segment, SubsegmentNonParking, SubsegmentParking
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
@@ -13,7 +13,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     return schemas.Segment(
         id=segment.id,
         properties={
-            "subsegments": segment.subsegments,
+            "subsegments": segment.subsegments_parking + segment.subsegments_non_parking,
             "owner_id": segment.owner_id,
         },
         geometry={"coordinates": shape.coords[:]},
@@ -22,14 +22,16 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 
 
 def get_segments(
-        db: Session,
-        bbox: List[Tuple[float, float]] = None,
-        exclude: List[int] = None,
-        details: bool = True,
+    db: Session,
+    bbox: List[Tuple[float, float]] = None,
+    exclude: List[int] = None,
+    details: bool = True,
 ) -> schemas.SegmentCollection:
     segments = db.query(Segment).options(
-        joinedload(Segment.subsegments),
-        noload(Segment.subsegments if not details else None)
+        joinedload(Segment.subsegments_parking),
+        joinedload(Segment.subsegments_non_parking),
+        noload(Segment.subsegments_parking if not details else None),
+        noload(Segment.subsegments_non_parking if not details else None),
     )
     if exclude:
         segments = segments.filter(Segment.id.notin_(exclude))
@@ -41,19 +43,27 @@ def get_segments(
 
 
 def create_segment(
-    db: Session, segment: schemas.SegmentCreate, user_id: int
+    db: Session, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
     )
 
-    db_segment = Segment(geometry=geometry, owner_id=user_id)
+    db_segment = Segment()
+    db_segment.geometry = geometry
+    db_segment.owner_id = user_id
 
     for subsegment in segment.properties.subsegments:
-        db_prop = Subsegment(
-            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
-        )
-        db.add(db_prop)
+        if subsegment.parking_allowed:
+            db_prop = SubsegmentParking(
+                segment_id=db_segment.id, subsegment=subsegment
+            )
+            db.add(db_prop)
+        else:
+            db_prop = SubsegmentNonParking(
+                segment_id=db_segment.id, subsegment=subsegment
+            )
+            db.add(db_prop)
 
     db.add(db_segment)
     db.commit()
@@ -62,7 +72,7 @@ def create_segment(
 
 
 def update_segment(
-    db: Session, segment_id: int, segment: schemas.SegmentCreate, user_id: int
+    db: Session, segment_id: int, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326

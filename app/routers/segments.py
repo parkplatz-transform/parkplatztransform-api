@@ -1,4 +1,3 @@
-import time
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException
@@ -17,7 +16,7 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
     return list(zip(spl[0::2], spl[1::2]))
 
 
-@router.get("/segments/",  response_model=schemas.SegmentCollection)
+@router.get("/segments/", response_model=schemas.SegmentCollection)
 async def read_segments(
     bbox: Optional[str] = None,
     exclude: Optional[str] = None,
@@ -35,10 +34,10 @@ async def read_segments(
             assert len(bbox) >= 5
         except Exception as e:
             raise HTTPException(400, validation["bbox"])
-    db_recordings = controllers.get_segments(
+    db_segments = controllers.get_segments(
         db, bbox=bbox, exclude=exclude, details=details
     )
-    return db_recordings
+    return db_segments
 
 
 @router.get(
@@ -60,8 +59,9 @@ def create_segment(
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    created_recording = controllers.create_segment(db=db, segment=segment, user_id=user.id)
-    return created_recording
+    return controllers.create_segment(
+        db=db, segment=segment, user_id=user.id
+    )
 
 
 @router.delete(

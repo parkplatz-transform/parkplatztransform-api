@@ -9,7 +9,9 @@ class RedisCache:
         self.redis_cache: Optional[Redis] = None
 
     async def init_cache(self):
-        self.redis_cache = await create_redis_pool(f"{settings.redis_url}?encoding=utf-8")
+        self.redis_cache = await create_redis_pool(
+            f"{settings.redis_url}?encoding=utf-8"
+        )
 
     async def keys(self, pattern):
         return await self.redis_cache.keys(pattern)

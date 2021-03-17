@@ -10,8 +10,8 @@ class UserBase(BaseModel):
 
 
 class User(UserBase):
-    id: int
-    permission_level: int = access.get('guest')
+    id: str
+    permission_level: int = access.get("guest")
 
     class Config:
         orm_mode = True
