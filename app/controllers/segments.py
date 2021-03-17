@@ -87,18 +87,28 @@ def update_segment(
         lambda sub: sub.id is None, segment.properties.subsegments
     )
     for subsegment in subsegments_to_add:
-        db_subsegment = Subsegment(
-            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
-        )
+        if subsegment.parking_allowed:
+            db_subsegment = SubsegmentParking(
+                segment_id=db_segment.id, subsegment=subsegment
+            )
+        else:
+            db_subsegment = SubsegmentNonParking(
+                segment_id=db_segment.id, subsegment=subsegment
+            )
         db.add(db_subsegment)
 
     # Remove stale subsegments
-    old_ids = set(map(lambda sub: sub.id, db_segment.subsegments))
+    old_ids = set(map(lambda sub: sub.id, db_segment.subsegments_non_parking + db_segment.subsegments_parking))
     new_ids = set(map(lambda sub: sub.id, segment.properties.subsegments))
     subsegments_to_remove = old_ids - new_ids
 
     for subsegment_id in subsegments_to_remove:
-        db_subsegment = db.query(Subsegment).get(subsegment_id)
+        db_subsegment
+        try:
+            db_subsegment = db.query(SubsegmentParking).get(subsegment_id)
+        except:
+            db_subsegment = db.query(SubsegmentNonParking).get(subsegment_id)
+        
         db.delete(db_subsegment)
 
     # Update changed subsegments
@@ -108,7 +118,10 @@ def update_segment(
     for subsegment in subsegments_to_update:
         del subsegment.created_at
         del subsegment.modified_at
-        db.query(Subsegment).filter(Subsegment.id == subsegment.id).update(
+        db.query(SubsegmentParking).filter(SubsegmentParking.id == subsegment.id).update(
+            subsegment.__dict__
+        )
+        db.query(SubsegmentNonParking).filter(SubsegmentNonParking.id == subsegment.id).update(
             subsegment.__dict__
         )
 
