@@ -74,7 +74,7 @@ def create_segment(
 
 
 def update_segment(
-    db: Session, segment_id: int, segment: schemas.SegmentCreate, user_id: str
+    db: Session, segment_id: str, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
@@ -115,15 +115,37 @@ def update_segment(
     subsegments_to_update = filter(
         lambda sub: sub.id is not None, segment.properties.subsegments
     )
-    for subsegment in subsegments_to_update:
-        del subsegment.created_at
-        del subsegment.modified_at
-        db.query(SubsegmentParking).filter(SubsegmentParking.id == subsegment.id).update(
-            subsegment.__dict__
-        )
-        db.query(SubsegmentNonParking).filter(SubsegmentNonParking.id == subsegment.id).update(
-            subsegment.__dict__
-        )
+    for idx, subsegment in enumerate(subsegments_to_update):
+        if subsegment.parking_allowed:
+            db.query(SubsegmentParking).filter(SubsegmentParking.id == subsegment.id).update(
+                {
+                    'order_number': idx,
+                    'length_in_meters': subsegment.length_in_meters,
+                    'car_count': subsegment.car_count,
+                    'quality': subsegment.quality,
+                    'fee': subsegment.fee,
+                    'street_location': subsegment.street_location,
+                    'marked': subsegment.marked,
+                    'alignment': subsegment.alignment,
+                    'user_restrictions': subsegment.user_restrictions,
+                    'alternative_usage_reason': subsegment.alternative_usage_reason,
+                    'time_constraint': subsegment.time_constraint,
+                    'time_constraint_reason': subsegment.time_constraint_reason,
+                    'duration_constraint': subsegment.duration_constraint,
+                    'duration_constraint_reason': subsegment.duration_constraint_reason,
+                },
+                synchronize_session=False
+            )
+        else:
+            db.query(SubsegmentNonParking).filter(SubsegmentNonParking.id == subsegment.id).update(
+                {
+                    'order_number': idx,
+                    'length_in_meters': subsegment.length_in_meters,
+                    'quality': subsegment.quality,
+                    'no_parking_reasons': subsegment.no_parking_reasons,
+                },
+                synchronize_session=False
+            )
 
     db_segment.geometry = geometry
     db_segment.owner_id = user_id
@@ -133,13 +155,13 @@ def update_segment(
     return serialize_segment(db_segment)
 
 
-def delete_segment(db: Session, segment_id: int):
+def delete_segment(db: Session, segment_id: str):
     segment = db.query(Segment).filter(Segment.id == segment_id).first()
     db.delete(segment)
     db.commit()
     return segment
 
 
-def get_segment(db: Session, segment_id: int):
+def get_segment(db: Session, segment_id: str):
     segment = db.query(Segment).get(segment_id)
     return serialize_segment(segment)

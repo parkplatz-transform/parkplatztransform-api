@@ -67,7 +67,7 @@ def create_segment(
 @router.delete(
     "/segments/{segment_id}", response_model=str, dependencies=[Depends(get_session)]
 )
-def delete_segment(segment_id: int, db: Session = Depends(get_db)):
+def delete_segment(segment_id: str, db: Session = Depends(get_db)):
     result = controllers.delete_segment(db=db, segment_id=segment_id)
     if not result:
         HTTPException(status_code=404)
