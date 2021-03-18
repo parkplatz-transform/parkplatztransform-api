@@ -43,6 +43,24 @@ def get_segments(
     return schemas.SegmentCollection(features=collection)
 
 
+def create_subsegments(db: Session, subsegments, segment_id: str):
+    for idx, subsegment in enumerate(subsegments):
+        if subsegment.parking_allowed:
+            db_prop = SubsegmentParking(
+                segment_id=segment_id, 
+                subsegment=subsegment,
+                order_number=idx,
+            )
+            db.add(db_prop)
+        else:
+            db_prop = SubsegmentNonParking(
+                segment_id=segment_id, 
+                subsegment=subsegment,
+                order_number=idx,
+            )
+            db.add(db_prop)
+
+
 def create_segment(
     db: Session, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
@@ -57,17 +75,8 @@ def create_segment(
     db.add(db_segment)
     db.commit()
     db.refresh(db_segment)
-    for subsegment in segment.properties.subsegments:
-        if subsegment.parking_allowed:
-            db_prop = SubsegmentParking(
-                segment_id=db_segment.id, subsegment=subsegment
-            )
-            db.add(db_prop)
-        else:
-            db_prop = SubsegmentNonParking(
-                segment_id=db_segment.id, subsegment=subsegment
-            )
-            db.add(db_prop)
+
+    create_subsegments(db, segment.properties.subsegments, db_segment.id)
     
     db.commit()
     return serialize_segment(db_segment)
@@ -82,70 +91,10 @@ def update_segment(
 
     db_segment = db.query(Segment).get(segment_id)
 
-    # Write new subsegments
-    subsegments_to_add = filter(
-        lambda sub: sub.id is None, segment.properties.subsegments
-    )
-    for subsegment in subsegments_to_add:
-        if subsegment.parking_allowed:
-            db_subsegment = SubsegmentParking(
-                segment_id=db_segment.id, subsegment=subsegment
-            )
-        else:
-            db_subsegment = SubsegmentNonParking(
-                segment_id=db_segment.id, subsegment=subsegment
-            )
-        db.add(db_subsegment)
+    db.query(SubsegmentNonParking).filter(SubsegmentNonParking.segment_id == segment_id).delete()
+    db.query(SubsegmentParking).filter(SubsegmentParking.segment_id == segment_id).delete()
 
-    # Remove stale subsegments
-    old_ids = set(map(lambda sub: sub.id, db_segment.subsegments_non_parking + db_segment.subsegments_parking))
-    new_ids = set(map(lambda sub: sub.id, segment.properties.subsegments))
-    subsegments_to_remove = old_ids - new_ids
-
-    for subsegment_id in subsegments_to_remove:
-        db_subsegment
-        try:
-            db_subsegment = db.query(SubsegmentParking).get(subsegment_id)
-        except:
-            db_subsegment = db.query(SubsegmentNonParking).get(subsegment_id)
-        
-        db.delete(db_subsegment)
-
-    # Update changed subsegments
-    subsegments_to_update = filter(
-        lambda sub: sub.id is not None, segment.properties.subsegments
-    )
-    for idx, subsegment in enumerate(subsegments_to_update):
-        if subsegment.parking_allowed:
-            db.query(SubsegmentParking).filter(SubsegmentParking.id == subsegment.id).update(
-                {
-                    'order_number': idx,
-                    'length_in_meters': subsegment.length_in_meters,
-                    'car_count': subsegment.car_count,
-                    'quality': subsegment.quality,
-                    'fee': subsegment.fee,
-                    'street_location': subsegment.street_location,
-                    'marked': subsegment.marked,
-                    'alignment': subsegment.alignment,
-                    'user_restrictions': subsegment.user_restrictions,
-                    'alternative_usage_reason': subsegment.alternative_usage_reason,
-                    'time_constraint': subsegment.time_constraint,
-                    'time_constraint_reason': subsegment.time_constraint_reason,
-                    'duration_constraint': subsegment.duration_constraint,
-                    'duration_constraint_reason': subsegment.duration_constraint_reason,
-                },
-                synchronize_session=False
-            )
-        else:
-            db.query(SubsegmentNonParking).filter(SubsegmentNonParking.id == subsegment.id).update(
-                {
-                    'order_number': idx,
-                    'length_in_meters': subsegment.length_in_meters,
-                    'quality': subsegment.quality,
-                    'no_parking_reasons': subsegment.no_parking_reasons,
-                },
-                synchronize_session=False
-            )
+    create_subsegments(db, segment.properties.subsegments, db_segment.id)
 
     db_segment.geometry = geometry
     db_segment.owner_id = user_id

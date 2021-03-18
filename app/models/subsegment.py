@@ -69,8 +69,8 @@ class AlternativeUsageReason(str, enum.Enum):
 
 
 class SubsegmentNonParking(BaseMixin, Base):
-    def __init__(self, subsegment, segment_id: str) -> None:
-        self.order_number = subsegment.order_number
+    def __init__(self, subsegment, segment_id: str, order_number: int) -> None:
+        self.order_number = order_number
         self.length_in_meters = subsegment.length_in_meters
         self.quality = subsegment.quality
         self.no_parking_reasons = subsegment.no_parking_reasons
@@ -95,8 +95,8 @@ class SubsegmentNonParking(BaseMixin, Base):
 
 
 class SubsegmentParking(BaseMixin, Base):
-    def __init__(self, subsegment, segment_id: str) -> None:
-        self.order_number = subsegment.order_number
+    def __init__(self, subsegment, segment_id: str, order_number: int) -> None:
+        self.order_number = order_number
         self.length_in_meters = subsegment.length_in_meters
         self.car_count = subsegment.car_count
         self.quality = subsegment.quality

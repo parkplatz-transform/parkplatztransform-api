@@ -69,7 +69,7 @@ async def get_logged_in_user(
 
 
 @router.post("/users/logout/")
-async def get_logged_in_user(
+async def logout_user(
     response: Response,
     sessionid: Optional[str] = Cookie(None),
     session_storage: SessionStorage = Depends(SessionStorage),
