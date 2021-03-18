@@ -104,7 +104,8 @@ class SubsegmentParking(BaseMixin, Base):
         self.street_location = subsegment.street_location
         self.marked = subsegment.marked
         self.alignment = subsegment.alignment
-        self.user_restrictions = subsegment.user_restrictions
+        self.user_restriction = subsegment.user_restriction
+        self.user_restriction_reason = subsegment.user_restriction_reason
         self.alternative_usage_reason = subsegment.alternative_usage_reason
         self.time_constraint = subsegment.time_constraint
         self.time_constraint_reason = subsegment.time_constraint_reason
@@ -129,8 +130,10 @@ class SubsegmentParking(BaseMixin, Base):
     street_location = Column(Enum(StreetLocation))
     marked = Column(Boolean)
     alignment = Column(Enum(Alignment))
-    user_restrictions = Column(Enum(UserRestriction))
     alternative_usage_reason = Column(Enum(AlternativeUsageReason))
+    
+    user_restriction = Column(Boolean)
+    user_restriction_reason = Column(Enum(UserRestriction))
 
     time_constraint = Column(Boolean)
     time_constraint_reason = Column(Text)

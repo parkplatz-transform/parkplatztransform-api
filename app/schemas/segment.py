@@ -32,7 +32,8 @@ class SubsegmentBase(BaseModel):
     marked: Optional[bool]
     alignment: Optional[Alignment]
     duration_constraint: Optional[bool]
-    user_restrictions: Optional[UserRestriction]
+    user_restriction: Optional[bool]
+    user_restriction_reason: Optional[UserRestriction]
     alternative_usage_reason: Optional[AlternativeUsageReason]
     time_constraint: Optional[bool]
     time_constraint_reason: Optional[str]
@@ -43,9 +44,6 @@ class SubsegmentBase(BaseModel):
 
 
 class Subsegment(SubsegmentBase):
-    id: Optional[str]
-    created_at: Optional[datetime.datetime]
-    modified_at: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True

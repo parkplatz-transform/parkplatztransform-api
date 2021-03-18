@@ -150,6 +150,7 @@ def upgrade():
         sa.Column("time_constraint_reason", sa.Text(), nullable=True),
         sa.Column("duration_constraint", sa.Boolean(), nullable=True),
         sa.Column("duration_constraint_reason", sa.Text(), nullable=True),
+        sa.Column("user_restriction", sa.Boolean(), nullable=True),
         sa.Column("segment_id", postgresql.UUID(), nullable=False),
         sa.ForeignKeyConstraint(["segment_id"], ["segments.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
@@ -157,7 +158,7 @@ def upgrade():
 
     op.add_column('subsegments_parking', sa.Column('alignment', alignment))
     op.add_column('subsegments_parking', sa.Column('street_location', street_location))
-    op.add_column('subsegments_parking', sa.Column('user_restrictions', user_restrictions))
+    op.add_column('subsegments_parking', sa.Column('user_restriction_reason', user_restrictions))
     op.add_column('subsegments_parking', sa.Column('alternative_usage_reason', alternative_usage_reason))
 
     op.create_index(
