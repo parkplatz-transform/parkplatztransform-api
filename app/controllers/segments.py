@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Tuple
 
 from sqlalchemy.orm import Session, noload, joinedload
@@ -5,7 +6,7 @@ from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import LineString, Polygon
 
 from .. import schemas
-from ..models import Segment, Subsegment
+from ..models import Segment, SubsegmentNonParking, SubsegmentParking
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
@@ -13,7 +14,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     return schemas.Segment(
         id=segment.id,
         properties={
-            "subsegments": segment.subsegments,
+            "subsegments": segment.subsegments_parking + segment.subsegments_non_parking,
             "owner_id": segment.owner_id,
         },
         geometry={"coordinates": shape.coords[:]},
@@ -22,14 +23,16 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 
 
 def get_segments(
-        db: Session,
-        bbox: List[Tuple[float, float]] = None,
-        exclude: List[int] = None,
-        details: bool = True,
+    db: Session,
+    bbox: List[Tuple[float, float]] = None,
+    exclude: List[int] = None,
+    details: bool = True,
 ) -> schemas.SegmentCollection:
     segments = db.query(Segment).options(
-        joinedload(Segment.subsegments),
-        noload(Segment.subsegments if not details else None)
+        joinedload(Segment.subsegments_parking),
+        joinedload(Segment.subsegments_non_parking),
+        noload(Segment.subsegments_parking if not details else None),
+        noload(Segment.subsegments_non_parking if not details else None),
     )
     if exclude:
         segments = segments.filter(Segment.id.notin_(exclude))
@@ -40,29 +43,47 @@ def get_segments(
     return schemas.SegmentCollection(features=collection)
 
 
+def create_subsegments(db: Session, subsegments, segment_id: str):
+    for idx, subsegment in enumerate(subsegments):
+        if subsegment.parking_allowed:
+            db_prop = SubsegmentParking(
+                segment_id=segment_id, 
+                subsegment=subsegment,
+                order_number=idx,
+            )
+            db.add(db_prop)
+        else:
+            db_prop = SubsegmentNonParking(
+                segment_id=segment_id, 
+                subsegment=subsegment,
+                order_number=idx,
+            )
+            db.add(db_prop)
+
+
 def create_segment(
-    db: Session, segment: schemas.SegmentCreate, user_id: int
+    db: Session, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
     )
 
-    db_segment = Segment(geometry=geometry, owner_id=user_id)
-
-    for subsegment in segment.properties.subsegments:
-        db_prop = Subsegment(
-            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
-        )
-        db.add(db_prop)
+    db_segment = Segment()
+    db_segment.geometry = geometry
+    db_segment.owner_id = user_id
 
     db.add(db_segment)
     db.commit()
     db.refresh(db_segment)
+
+    create_subsegments(db, segment.properties.subsegments, db_segment.id)
+    
+    db.commit()
     return serialize_segment(db_segment)
 
 
 def update_segment(
-    db: Session, segment_id: int, segment: schemas.SegmentCreate, user_id: int
+    db: Session, segment_id: str, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
@@ -70,35 +91,10 @@ def update_segment(
 
     db_segment = db.query(Segment).get(segment_id)
 
-    # Write new subsegments
-    subsegments_to_add = filter(
-        lambda sub: sub.id is None, segment.properties.subsegments
-    )
-    for subsegment in subsegments_to_add:
-        db_subsegment = Subsegment(
-            segment_id=db_segment.id, segment=db_segment, **subsegment.__dict__
-        )
-        db.add(db_subsegment)
+    db.query(SubsegmentNonParking).filter(SubsegmentNonParking.segment_id == segment_id).delete()
+    db.query(SubsegmentParking).filter(SubsegmentParking.segment_id == segment_id).delete()
 
-    # Remove stale subsegments
-    old_ids = set(map(lambda sub: sub.id, db_segment.subsegments))
-    new_ids = set(map(lambda sub: sub.id, segment.properties.subsegments))
-    subsegments_to_remove = old_ids - new_ids
-
-    for subsegment_id in subsegments_to_remove:
-        db_subsegment = db.query(Subsegment).get(subsegment_id)
-        db.delete(db_subsegment)
-
-    # Update changed subsegments
-    subsegments_to_update = filter(
-        lambda sub: sub.id is not None, segment.properties.subsegments
-    )
-    for subsegment in subsegments_to_update:
-        del subsegment.created_at
-        del subsegment.modified_at
-        db.query(Subsegment).filter(Subsegment.id == subsegment.id).update(
-            subsegment.__dict__
-        )
+    create_subsegments(db, segment.properties.subsegments, db_segment.id)
 
     db_segment.geometry = geometry
     db_segment.owner_id = user_id
@@ -108,13 +104,13 @@ def update_segment(
     return serialize_segment(db_segment)
 
 
-def delete_segment(db: Session, segment_id: int):
+def delete_segment(db: Session, segment_id: str):
     segment = db.query(Segment).filter(Segment.id == segment_id).first()
     db.delete(segment)
     db.commit()
     return segment
 
 
-def get_segment(db: Session, segment_id: int):
+def get_segment(db: Session, segment_id: str):
     segment = db.query(Segment).get(segment_id)
     return serialize_segment(segment)

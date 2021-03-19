@@ -20,7 +20,7 @@ class LineString(PydanticLineString):
 
 
 class SubsegmentBase(BaseModel):
-    parking_allowed: bool = True
+    parking_allowed: bool
     order_number: int = 0
     length_in_meters: Optional[float]
     car_count: Optional[int]
@@ -32,37 +32,18 @@ class SubsegmentBase(BaseModel):
     marked: Optional[bool]
     alignment: Optional[Alignment]
     duration_constraint: Optional[bool]
-    user_restrictions: Optional[UserRestriction]
+    user_restriction: Optional[bool]
+    user_restriction_reason: Optional[UserRestriction]
     alternative_usage_reason: Optional[AlternativeUsageReason]
     time_constraint: Optional[bool]
     time_constraint_reason: Optional[str]
-    duration_constraint_details: Optional[str]
+    duration_constraint_reason: Optional[str]
 
     # Public parking not allowed
     no_parking_reasons: List[NoParkingReason] = []
 
-    @validator("no_parking_reasons", pre=True)
-    def replace_none_with_empty_list(cls, value):
-        return [] if value is None else value
-
-    @root_validator(pre=True)
-    def enforce_parking_not_allowed(cls, values):
-        if values["parking_allowed"]:
-            assert (
-                values.get("no_parking_reasons") is None
-                or len(values["no_parking_reasons"]) == 0
-            ), "no_parking_reasons incompatible with parking_allowed=true"
-        else:
-            assert (
-                values.get("alternative_usage_reason") is None
-            ), "alternative_usage_reason incompatible with parking_allowed=false"
-        return values
-
 
 class Subsegment(SubsegmentBase):
-    id: Optional[int]
-    created_at: Optional[datetime.datetime]
-    modified_at: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True
@@ -74,11 +55,11 @@ class SubsegmentsBase(BaseModel):
 
 class Properties(BaseModel):
     subsegments: List[Subsegment]
-    owner_id: Optional[int]
+    owner_id: Optional[str]
 
 
 class Segment(Feature):
-    id: int
+    id: str
     properties: Properties
     geometry: LineString
 

@@ -29,11 +29,11 @@ def send_magic_link(user: schemas.UserBase, background_tasks: BackgroundTasks):
 
 @router.get("/users/verify/")
 async def verify_magic_link(
-        code: str,
-        email: str,
-        dev: bool = False,
-        db: Session = Depends(get_db),
-        session_storage: SessionStorage = Depends(SessionStorage)
+    code: str,
+    email: str,
+    dev: bool = False,
+    db: Session = Depends(get_db),
+    session_storage: SessionStorage = Depends(SessionStorage),
 ):
     if not one_time_auth.valid_token(code, email):
         raise HTTPException(401, validation["unauthorized"])
@@ -45,7 +45,9 @@ async def verify_magic_link(
 
     session_id = await session_storage.create_session(user)
 
-    response = RedirectResponse("http://localhost:3000" if dev else settings.frontend_url)
+    response = RedirectResponse(
+        "http://localhost:3000" if dev else settings.frontend_url
+    )
     response.set_cookie(
         key=settings.session_identifier,
         value=session_id,
@@ -54,21 +56,23 @@ async def verify_magic_link(
         httponly=True,
         max_age=settings.session_expiry,
         samesite="strict",
-        secure=False if dev else True
+        secure=False if dev else True,
     )
     return response
 
 
 @router.get("/users/me/", response_model=schemas.User)
-async def get_logged_in_user(session: Optional[schemas.UserBase] = Depends(get_session)):
+async def get_logged_in_user(
+    session: Optional[schemas.UserBase] = Depends(get_session),
+):
     return session
 
 
 @router.post("/users/logout/")
-async def get_logged_in_user(
-        response: Response,
-        sessionid: Optional[str] = Cookie(None),
-        session_storage: SessionStorage = Depends(SessionStorage)
-    ):
+async def logout_user(
+    response: Response,
+    sessionid: Optional[str] = Cookie(None),
+    session_storage: SessionStorage = Depends(SessionStorage),
+):
     await session_storage.delete_session(sessionid)
     return response

@@ -1,5 +1,7 @@
-import base64
+import uuid
 import json
+import pytest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -15,11 +17,19 @@ OTA = OneTimeAuth()
 email = "testuser@email.com"
 token = OTA.generate_token(email)
 
+def pytest_namespace():
+    return {
+        "segment_id": None,
+        "subsegment_id": None,
+    }
+
+user_id = uuid.UUID('2873b1fb-abc3-4e9d-bfce-a65453fce811')
 
 def get_session_mock():
-    return User(id=1, email=email, permission_level=0)
+    return User(id=user_id.hex, email=email, permission_level=0)
 
-class SessionStorageMock():
+
+class SessionStorageMock:
     async def create_session(self, user: User):
         return {}
 
@@ -32,13 +42,11 @@ def test_docs():
     response = client.get("docs")
     assert response.status_code == 200
 
-
 def test_create_user():
-    client.get(f"/users/verify/?code={token}&email={email}")
-    response = client.get("/users/me")
-    assert response.status_code == 200
-
-
+    with patch.object(uuid, "uuid4", side_effect=lambda: user_id):
+        client.get(f"/users/verify/?code={token}&email={email}")
+        response = client.get("/users/me")
+        assert response.status_code == 200
 
 
 def test_create_segment():
@@ -73,6 +81,8 @@ def test_create_segment():
         },
     }
     response = client.post("/segments/", json.dumps(data))
+    pytest.segment_id = response.json()["id"]
+    pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
     assert response.status_code == 200
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
@@ -88,7 +98,7 @@ def test_read_segments_with_options():
     assert response.status_code == 200
     assert response.json()["features"][0]["properties"]["subsegments"] == []
 
-    response = client.get("/segments/?exclude=1")
+    response = client.get(f"/segments/?exclude={pytest.segment_id}")
     assert response.status_code == 200
     assert response.json()["features"] == []
 
@@ -126,7 +136,7 @@ def test_read_segments_with_bbox():
 
 
 def test_read_segments_with_exclude():
-    response = client.get("/segments/?exclude=1")
+    response = client.get(f"/segments/?exclude={pytest.segment_id}")
     assert response.status_code == 200
     assert response.json() == {
         "bbox": None,
@@ -136,9 +146,9 @@ def test_read_segments_with_exclude():
 
 
 def test_read_segment():
-    response = client.get("/segments/1")
+    response = client.get(f"/segments/{pytest.segment_id}")
     assert response.status_code == 200
-    assert response.json()["id"] == 1
+    assert response.json()["id"] == pytest.segment_id
     assert response.json()["geometry"]["coordinates"] == [
         [13.43244105577469, 52.54816979768233],
         [13.43432933092117, 52.54754673757979],
@@ -151,7 +161,7 @@ def test_update_segment():
         "properties": {
             "subsegments": [
                 {
-                    "id": 1,
+                    "id": pytest.subsegment_id,
                     "parking_allowed": True,
                     "order_number": 0,
                     "length_in_meters": 0,
@@ -176,7 +186,7 @@ def test_update_segment():
                     "car_count": 0,
                     "quality": 1,
                     "fee": False,
-                    "street_location": "unknown",
+                    "street_location": None,
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
@@ -195,13 +205,11 @@ def test_update_segment():
             "type": "LineString",
         },
     }
-    response = client.put("/segments/1", json.dumps(data))
-    print(response.json())
+    response = client.put(f"/segments/{pytest.segment_id}", json.dumps(data))
     assert response.status_code == 200
-    assert response.json()["id"] == 1
+    assert response.json()["id"] == pytest.segment_id
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
-    assert len(response.json()["properties"]["subsegments"]) == 2
     assert response.json()["properties"]["subsegments"][0]["marked"]
     assert response.json()["properties"]["subsegments"][1]["street_location"] is None
     assert (
@@ -218,5 +226,5 @@ def test_update_segment():
 
 
 def test_delete_segment():
-    response = client.delete("/segments/1")
+    response = client.delete(f"/segments/{pytest.segment_id}")
     assert response.status_code == 200
