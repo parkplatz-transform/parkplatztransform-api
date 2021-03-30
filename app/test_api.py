@@ -26,7 +26,7 @@ def pytest_namespace():
 user_id = uuid.UUID('2873b1fb-abc3-4e9d-bfce-a65453fce811')
 
 def get_session_mock():
-    return User(id=user_id.hex, email=email, permission_level=0)
+    return User(id=user_id.hex, email=email, permission_level=1)
 
 
 class SessionStorageMock:
@@ -82,7 +82,7 @@ def test_create_segment():
     }
     response = client.post("/segments/", json.dumps(data))
     pytest.segment_id = response.json()["id"]
-    pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
+    #pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
     assert response.status_code == 200
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
@@ -161,7 +161,6 @@ def test_update_segment():
         "properties": {
             "subsegments": [
                 {
-                    "id": pytest.subsegment_id,
                     "parking_allowed": True,
                     "order_number": 0,
                     "length_in_meters": 0,
@@ -172,7 +171,8 @@ def test_update_segment():
                     "marked": True,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "user_restrictions": "handicap",
+                    "user_restriction": True,
+                    "user_restriction_reason": "handicap",
                     "alternative_usage_reason": "market",
                     "time_constraint": False,
                     "time_constraint_reason": "string",
@@ -190,7 +190,7 @@ def test_update_segment():
                     "marked": False,
                     "alignment": "parallel",
                     "duration_constraint": False,
-                    "user_restrictions": None,
+                    "user_restriction": None,
                     "time_constraint": False,
                     "time_constraint_reason": "string",
                     "no_parking_reasons": ["private_parking"],
@@ -212,8 +212,9 @@ def test_update_segment():
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert response.json()["properties"]["subsegments"][0]["marked"]
     assert response.json()["properties"]["subsegments"][1]["street_location"] is None
+    assert response.json()["properties"]["subsegments"][0]["user_restriction"]
     assert (
-        response.json()["properties"]["subsegments"][0]["user_restrictions"]
+        response.json()["properties"]["subsegments"][0]["user_restriction_reason"]
         == "handicap"
     )
     assert (
