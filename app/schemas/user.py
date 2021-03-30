@@ -11,7 +11,7 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     id: str
-    permission_level: int = access_levels.get("guest")
+    permission_level: int
 
     class Config:
         orm_mode = True

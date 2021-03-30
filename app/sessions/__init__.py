@@ -38,7 +38,7 @@ async def get_session(
         session = await session_storage.get_session(sessionid)
         if session:
             data = json.loads(session)
-            return User(id=data["id"], email=data["email"])
+            return User(id=data["id"], email=data["email"], permission_level=data["permission_level"])
         else:
             raise HTTPException(401, validation["unauthorized"])
     else:
