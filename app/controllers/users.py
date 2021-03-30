@@ -5,7 +5,7 @@ from .. import schemas
 from ..models import User
 
 
-def get_user(db: Session, user_id: int) -> User:
+def get_user(db: Session, user_id: str) -> User:
     return db.query(User).filter(User.id == user_id).first()
 
 

@@ -17,6 +17,7 @@ origins = [
     "http://localhost:8000",
     "http://localhost:8023",
     "http://192.168.0.40:3000",
+    "http://157.90.225.22:3000",
 ]
 
 app.add_middleware(
@@ -38,9 +39,11 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(users.router)
 app.include_router(segments.router)
 
-@app.on_event('startup')
-async def starup_event():
+
+@app.on_event("startup")
+async def startup_event():
     await redis_cache.init_cache()
+
 
 if settings.sentry_url:
     init(dsn=settings.sentry_url, integrations=[SqlalchemyIntegration()])

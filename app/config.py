@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     frontend_url: str = "https://app.xtransform.org"
     sentry_url: str = ""
-    session_expiry: int = 1 * 24 * 60 * 60  # 1 Day
+    session_expiry: int = 7 * 24 * 60 * 60  # 1 Week
     redis_url: str = "redis://redis:6379"
 
     class Config:

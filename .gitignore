@@ -4,3 +4,4 @@ __pycache__
 .coverage
 TODO.md
 latest.dump
+scratch.sql

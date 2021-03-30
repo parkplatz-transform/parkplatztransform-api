@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from app.models.user import access
+from app.models.user import access_levels
 
 
 class UserBase(BaseModel):
@@ -10,8 +10,8 @@ class UserBase(BaseModel):
 
 
 class User(UserBase):
-    id: int
-    permission_level: int = access.get('guest')
+    id: str
+    permission_level: int = access_levels.get("guest")
 
     class Config:
         orm_mode = True

@@ -7,7 +7,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from app.models import base_mixin
-from app.models.segment import Segment, Subsegment
+from app.models import Segment, SubsegmentParking, SubsegmentNonParking
 from app.models.user import User
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
