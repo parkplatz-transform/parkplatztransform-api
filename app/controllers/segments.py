@@ -7,6 +7,7 @@ from shapely.geometry import LineString, Polygon
 
 from .. import schemas
 from ..models import Segment, SubsegmentNonParking, SubsegmentParking
+from ..permissions import user_can_operate
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
@@ -83,13 +84,16 @@ def create_segment(
 
 
 def update_segment(
-    db: Session, segment_id: str, segment: schemas.SegmentCreate, user_id: str
+    db: Session, segment_id: str, segment: schemas.SegmentCreate, user: schemas.User
 ) -> schemas.Segment:
     geometry = from_shape(
         LineString(coordinates=segment.geometry.coordinates), srid=4326
     )
 
     db_segment = db.query(Segment).get(segment_id)
+    
+    # Send a 403 and bail out if the user does not have appropriate permissions
+    user_can_operate(user, db_segment.owner_id)
 
     db.query(SubsegmentNonParking).filter(SubsegmentNonParking.segment_id == segment_id).delete()
     db.query(SubsegmentParking).filter(SubsegmentParking.segment_id == segment_id).delete()
@@ -97,15 +101,19 @@ def update_segment(
     create_subsegments(db, segment.properties.subsegments, db_segment.id)
 
     db_segment.geometry = geometry
-    db_segment.owner_id = user_id
+    
+    # Always changes to the last user who edited the segment
+    db_segment.owner_id = user.id
 
     db.commit()
     db.refresh(db_segment)
     return serialize_segment(db_segment)
 
 
-def delete_segment(db: Session, segment_id: str):
+def delete_segment(db: Session, segment_id: str, user: schemas.User):
     segment = db.query(Segment).filter(Segment.id == segment_id).first()
+    # Send a 403 and bail out if the user does not have appropriate permissions
+    user_can_operate(user, segment.owner_id)
     db.delete(segment)
     db.commit()
     return segment
