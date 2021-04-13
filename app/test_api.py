@@ -17,13 +17,16 @@ OTA = OneTimeAuth()
 email = "testuser@email.com"
 token = OTA.generate_token(email)
 
+
 def pytest_namespace():
     return {
         "segment_id": None,
         "subsegment_id": None,
     }
 
-user_id = uuid.UUID('2873b1fb-abc3-4e9d-bfce-a65453fce811')
+
+user_id = uuid.UUID("2873b1fb-abc3-4e9d-bfce-a65453fce811")
+
 
 def get_session_mock():
     return User(id=user_id.hex, email=email, permission_level=1)
@@ -42,6 +45,7 @@ def test_docs():
     response = client.get("docs")
     assert response.status_code == 200
 
+
 def test_create_user():
     with patch.object(uuid, "uuid4", side_effect=lambda: user_id):
         client.get(f"/users/verify/?code={token}&email={email}")
@@ -53,6 +57,8 @@ def test_create_segment():
     data = {
         "type": "Feature",
         "properties": {
+            "data_source": "example data source",
+            "further_comments": "extra comments",
             "subsegments": [
                 {
                     "parking_allowed": True,
@@ -70,7 +76,7 @@ def test_create_segment():
                     "time_constraint_reason": "string",
                     "no_parking_reasons": [],
                 }
-            ]
+            ],
         },
         "geometry": {
             "coordinates": [
@@ -82,10 +88,12 @@ def test_create_segment():
     }
     response = client.post("/segments/", json.dumps(data))
     pytest.segment_id = response.json()["id"]
-    #pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
+    # pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
     assert response.status_code == 200
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
+    assert response.json()["properties"]["further_comments"] == "extra comments"
+    assert response.json()["properties"]["data_source"] == "example data source"
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 

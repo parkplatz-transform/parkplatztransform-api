@@ -44,7 +44,6 @@ class SubsegmentBase(BaseModel):
 
 
 class Subsegment(SubsegmentBase):
-
     class Config:
         orm_mode = True
 
@@ -56,6 +55,8 @@ class SubsegmentsBase(BaseModel):
 class Properties(BaseModel):
     subsegments: List[Subsegment]
     owner_id: Optional[str]
+    data_source: Optional[str]
+    further_comments: Optional[str]
 
 
 class Segment(Feature):
@@ -83,7 +84,7 @@ class SegmentBase(BaseModel):
 
 class SegmentCreate(BaseModel):
     type: str = "Feature"
-    properties: SubsegmentsBase
+    properties: Properties
     geometry: LineString
 
 

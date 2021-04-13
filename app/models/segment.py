@@ -17,7 +17,7 @@ class Segment(BaseMixin, Base):
     owner = relationship("User", back_populates="segments")
 
     further_comments = Column(Text)
-    # data_source = Column(Enum())
+    data_source = Column(Text)
 
     subsegments_non_parking = relationship(
         "SubsegmentNonParking", back_populates="segment", cascade="all, delete"

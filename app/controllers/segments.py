@@ -15,7 +15,10 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
     return schemas.Segment(
         id=segment.id,
         properties={
-            "subsegments": segment.subsegments_parking + segment.subsegments_non_parking,
+            "further_comments": segment.further_comments,
+            "data_source": segment.data_source,
+            "subsegments": segment.subsegments_parking
+            + segment.subsegments_non_parking,
             "owner_id": segment.owner_id,
         },
         geometry={"coordinates": shape.coords[:]},
@@ -48,14 +51,14 @@ def create_subsegments(db: Session, subsegments, segment_id: str):
     for idx, subsegment in enumerate(subsegments):
         if subsegment.parking_allowed:
             db_prop = SubsegmentParking(
-                segment_id=segment_id, 
+                segment_id=segment_id,
                 subsegment=subsegment,
                 order_number=idx,
             )
             db.add(db_prop)
         else:
             db_prop = SubsegmentNonParking(
-                segment_id=segment_id, 
+                segment_id=segment_id,
                 subsegment=subsegment,
                 order_number=idx,
             )
@@ -70,6 +73,8 @@ def create_segment(
     )
 
     db_segment = Segment()
+    db_segment.further_comments = segment.properties.further_comments
+    db_segment.data_source = segment.properties.data_source
     db_segment.geometry = geometry
     db_segment.owner_id = user_id
 
@@ -78,7 +83,7 @@ def create_segment(
     db.refresh(db_segment)
 
     create_subsegments(db, segment.properties.subsegments, db_segment.id)
-    
+
     db.commit()
     return serialize_segment(db_segment)
 
@@ -91,17 +96,21 @@ def update_segment(
     )
 
     db_segment = db.query(Segment).get(segment_id)
-    
+
     # Send a 403 and bail out if the user does not have appropriate permissions
     user_can_operate(user, db_segment.owner_id)
 
-    db.query(SubsegmentNonParking).filter(SubsegmentNonParking.segment_id == segment_id).delete()
-    db.query(SubsegmentParking).filter(SubsegmentParking.segment_id == segment_id).delete()
+    db.query(SubsegmentNonParking).filter(
+        SubsegmentNonParking.segment_id == segment_id
+    ).delete()
+    db.query(SubsegmentParking).filter(
+        SubsegmentParking.segment_id == segment_id
+    ).delete()
 
     create_subsegments(db, segment.properties.subsegments, db_segment.id)
 
     db_segment.geometry = geometry
-    
+
     # Always changes to the last user who edited the segment
     db_segment.owner_id = user.id
 
