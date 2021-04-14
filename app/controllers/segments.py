@@ -110,6 +110,8 @@ def update_segment(
     create_subsegments(db, segment.properties.subsegments, db_segment.id)
 
     db_segment.geometry = geometry
+    db_segment.further_comments = segment.properties.further_comments
+    db_segment.data_source = segment.properties.data_source
 
     # Always changes to the last user who edited the segment
     db_segment.owner_id = user.id

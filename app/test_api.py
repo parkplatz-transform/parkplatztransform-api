@@ -167,6 +167,8 @@ def test_update_segment():
     data = {
         "type": "Feature",
         "properties": {
+            "data_source": "updated data source",
+            "further_comments": "updated extra comments",
             "subsegments": [
                 {
                     "parking_allowed": True,
@@ -203,7 +205,7 @@ def test_update_segment():
                     "time_constraint_reason": "string",
                     "no_parking_reasons": ["private_parking"],
                 },
-            ]
+            ],
         },
         "geometry": {
             "coordinates": [
@@ -221,6 +223,8 @@ def test_update_segment():
     assert response.json()["properties"]["subsegments"][0]["marked"]
     assert response.json()["properties"]["subsegments"][1]["street_location"] is None
     assert response.json()["properties"]["subsegments"][0]["user_restriction"]
+    assert response.json()["properties"]["further_comments"] == "updated extra comments"
+    assert response.json()["properties"]["data_source"] == "updated data source"
     assert (
         response.json()["properties"]["subsegments"][0]["user_restriction_reason"]
         == "handicap"
