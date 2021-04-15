@@ -59,15 +59,17 @@ def create_segment(
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    return controllers.create_segment(
-        db=db, segment=segment, user_id=user.id
-    )
+    return controllers.create_segment(db=db, segment=segment, user_id=user.id)
 
 
 @router.delete(
     "/segments/{segment_id}", response_model=str, dependencies=[Depends(get_session)]
 )
-def delete_segment(segment_id: str, db: Session = Depends(get_db), user: schemas.User = Depends(get_session)):
+def delete_segment(
+    segment_id: str,
+    db: Session = Depends(get_db),
+    user: schemas.User = Depends(get_session),
+):
     result = controllers.delete_segment(db=db, segment_id=segment_id, user=user)
     if not result:
         HTTPException(status_code=404)

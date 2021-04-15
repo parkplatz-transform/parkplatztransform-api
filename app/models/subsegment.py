@@ -131,7 +131,7 @@ class SubsegmentParking(BaseMixin, Base):
     marked = Column(Boolean)
     alignment = Column(Enum(Alignment))
     alternative_usage_reason = Column(Enum(AlternativeUsageReason))
-    
+
     user_restriction = Column(Boolean)
     user_restriction_reason = Column(Enum(UserRestriction))
 
