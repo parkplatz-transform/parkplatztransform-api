@@ -57,6 +57,8 @@ class Properties(BaseModel):
     owner_id: Optional[str]
     data_source: Optional[str]
     further_comments: Optional[str]
+    modified_at: Optional[str]
+    created_at: Optional[str]
 
 
 class Segment(Feature):

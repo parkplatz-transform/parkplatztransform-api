@@ -1,5 +1,6 @@
 import uuid
-from typing import List, Tuple
+import datetime
+from typing import List, Tuple, Optional
 
 from sqlalchemy.orm import Session, noload, joinedload
 from geoalchemy2.shape import from_shape, to_shape
@@ -20,6 +21,8 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
             "subsegments": segment.subsegments_parking
             + segment.subsegments_non_parking,
             "owner_id": segment.owner_id,
+            "modified_at": segment.modified_at.isoformat(),
+            "created_at": segment.created_at.isoformat(),
         },
         geometry={"coordinates": shape.coords[:]},
         bbox=shape.bounds,
@@ -29,7 +32,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 def get_segments(
     db: Session,
     bbox: List[Tuple[float, float]] = None,
-    exclude: List[int] = None,
+    modified_after: Optional[str] = None,
     details: bool = True,
 ) -> schemas.SegmentCollection:
     segments = db.query(Segment).options(
@@ -38,8 +41,10 @@ def get_segments(
         noload(Segment.subsegments_parking if not details else None),
         noload(Segment.subsegments_non_parking if not details else None),
     )
-    if exclude:
-        segments = segments.filter(Segment.id.notin_(exclude))
+    if modified_after:
+        segments = segments.filter(
+            Segment.modified_at > datetime.datetime.fromisoformat(modified_after)
+        )
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = segments.filter(polygon.ST_Intersects(Segment.geometry))

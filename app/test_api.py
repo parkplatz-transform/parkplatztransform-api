@@ -88,7 +88,6 @@ def test_create_segment():
     }
     response = client.post("/segments/", json.dumps(data))
     pytest.segment_id = response.json()["id"]
-    # pytest.subsegment_id = response.json()["properties"]["subsegments"][0]["id"]
     assert response.status_code == 200
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
