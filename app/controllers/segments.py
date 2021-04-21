@@ -32,7 +32,7 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 def get_segments(
     db: Session,
     bbox: List[Tuple[float, float]] = None,
-    modified_after: Optional[str] = None,
+    modified_after: Optional[object] = None,
     details: bool = True,
 ) -> schemas.SegmentCollection:
     segments = db.query(Segment).options(
@@ -42,9 +42,7 @@ def get_segments(
         noload(Segment.subsegments_non_parking if not details else None),
     )
     if modified_after:
-        segments = segments.filter(
-            Segment.modified_at > datetime.datetime.fromisoformat(modified_after)
-        )
+        segments = segments.filter(Segment.modified_at > modified_after)
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = segments.filter(polygon.ST_Intersects(Segment.geometry))

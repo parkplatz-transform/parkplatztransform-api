@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException
@@ -23,6 +24,11 @@ async def read_segments(
     details: bool = True,
     db: Session = Depends(get_db),
 ):
+    if modified_after:
+        try:
+            modified_after = datetime.datetime.fromisoformat(modified_after)
+        except Exception as e:
+            raise HTTPException(400, str(e))
     if bbox:
         try:
             bbox = parse_bounding_box(bbox)
