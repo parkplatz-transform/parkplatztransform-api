@@ -1,6 +1,4 @@
-from typing import Optional
-
-from pydantic import BaseModel, EmailStr, StrictBool, validator, root_validator
+from pydantic import BaseModel, EmailStr, StrictBool, validator
 
 from app.strings import validation
 
