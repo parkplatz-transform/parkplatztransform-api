@@ -1,3 +1,2 @@
 #!/bin/bash
-black app
-flake8
+docker-compose run app flake8
