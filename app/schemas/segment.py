@@ -1,7 +1,6 @@
 from typing import Optional, List
-import datetime
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel
 from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import LineString as PydanticLineString

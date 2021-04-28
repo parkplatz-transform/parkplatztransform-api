@@ -1,6 +1,6 @@
-from .user import User, access_levels
-from .segment import Segment
-from .subsegment import (
+from .user import User, access_levels  # noqa
+from .segment import Segment  # noqa
+from .subsegment import (  # noqa
     Alignment,
     StreetLocation,
     UserRestriction,

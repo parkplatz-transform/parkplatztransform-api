@@ -1,5 +1,5 @@
-from .user import User, UserBase, UserVerified
-from .segment import (
+from .user import User, UserBase, UserVerified, UserCreate  # noqa
+from .segment import (  # noqa
     SegmentBase,
     Segment,
     SegmentCreate,

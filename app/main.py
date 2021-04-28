@@ -1,15 +1,15 @@
 from sentry_sdk import init
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from .routers import segments, users
-from .config import settings
-from .sessions import redis_cache
 
-app = FastAPI()
+from app.app import app
+from app.routers import segments, users
+from app.config import settings
+from app.services import redis_cache
+
 
 origins = [
     "https://app.xtransform.org",

@@ -66,7 +66,7 @@ class OneTimeAuth:
             return jwt.decode(
                 decoded_return_token, self.secret_key, algorithms=[self.JWT_ALGORITHM]
             )
-        except Exception as e:
+        except Exception:
             return None
 
     def valid_token(self, return_token: str, return_email: str = "") -> bool:

@@ -1,4 +1,5 @@
 import uuid
+import datetime
 import json
 import pytest
 from unittest.mock import patch
@@ -105,7 +106,7 @@ def test_read_segments_with_options():
     assert response.status_code == 200
     assert response.json()["features"][0]["properties"]["subsegments"] == []
 
-    response = client.get(f"/segments/?exclude={pytest.segment_id}")
+    response = client.get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
     assert response.status_code == 200
     assert response.json()["features"] == []
 
@@ -134,16 +135,6 @@ def test_read_segments_with_bbox():
         13.438317775726318,52.552030289646375,\
         13.438317775726318,52.546367466104385"
     )
-    assert response.status_code == 200
-    assert response.json() == {
-        "bbox": None,
-        "features": [],
-        "type": "FeatureCollection",
-    }
-
-
-def test_read_segments_with_exclude():
-    response = client.get(f"/segments/?exclude={pytest.segment_id}")
     assert response.status_code == 200
     assert response.json() == {
         "bbox": None,

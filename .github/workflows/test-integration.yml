@@ -7,5 +7,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
+      - name: Lint
+        run: sh ./scripts/lint.sh
       - name: Test
         run: sh ./scripts/test.sh

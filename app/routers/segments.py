@@ -5,7 +5,7 @@ from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
 from app import schemas, controllers
-from app.database import get_db
+from app.services import get_db
 from app.strings import validation
 from app.sessions import get_session
 
@@ -17,7 +17,10 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
     return list(zip(spl[0::2], spl[1::2]))
 
 
-@router.get("/segments/", response_model=schemas.SegmentCollection)
+@router.get(
+    "/segments/",
+    response_model=schemas.SegmentCollection,
+)
 async def read_segments(
     bbox: Optional[str] = None,
     modified_after: Optional[str] = None,
@@ -33,7 +36,7 @@ async def read_segments(
         try:
             bbox = parse_bounding_box(bbox)
             assert len(bbox) >= 5
-        except Exception as e:
+        except Exception:
             raise HTTPException(400, validation["bbox"])
     db_segments = controllers.get_segments(
         db, bbox=bbox, modified_after=modified_after, details=details

@@ -6,8 +6,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app import schemas, controllers
-from app.database import get_db
-from app.services import OneTimeAuth, EmailService
+from app.services import OneTimeAuth, EmailService, get_db
 from app.strings import validation
 from app.sessions import SessionStorage, get_session
 from app.config import settings
@@ -18,7 +17,7 @@ email_service = EmailService()
 one_time_auth = OneTimeAuth()
 
 
-@router.post("/users/", response_model=schemas.UserBase)
+@router.post("/users/", response_model=schemas.UserCreate)
 def send_magic_link(user: schemas.UserBase, background_tasks: BackgroundTasks):
     token = one_time_auth.generate_token(user.email)
     background_tasks.add_task(

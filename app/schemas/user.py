@@ -1,19 +1,23 @@
 from pydantic import BaseModel, EmailStr, StrictBool, validator
-from app.models.user import access_levels
+
+from ..strings import validation
 
 
 class UserBase(BaseModel):
     email: EmailStr
+
+    class Config:
+        orm_mode = True
+
+
+class UserCreate(UserBase):
     accepted_terms_and_conditions: StrictBool
 
     @validator("accepted_terms_and_conditions")
     def must_accept_terms(cls, v):
         if not v:
-            raise ValueError("User must accept terms and conditions")
+            raise ValueError(validation["must_accept_terms"])
         return v
-
-    class Config:
-        orm_mode = True
 
 
 class User(UserBase):

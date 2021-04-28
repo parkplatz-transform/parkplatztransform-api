@@ -1,1 +1,1 @@
-from .permissions import user_can_operate
+from .permissions import user_can_operate  # noqa
