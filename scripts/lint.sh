@@ -1,2 +1,2 @@
 #!/bin/bash
-docker-compose run app flake8
+docker-compose -f docker-compose.test.yml run app flake8
