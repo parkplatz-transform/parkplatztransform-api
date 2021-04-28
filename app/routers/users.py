@@ -17,8 +17,8 @@ email_service = EmailService()
 one_time_auth = OneTimeAuth()
 
 
-@router.post("/users/", response_model=schemas.UserCreate)
-def send_magic_link(user: schemas.UserBase, background_tasks: BackgroundTasks):
+@router.post("/users/", response_model=schemas.UserBase)
+def send_magic_link(user: schemas.UserCreate, background_tasks: BackgroundTasks):
     token = one_time_auth.generate_token(user.email)
     background_tasks.add_task(
         email_service.send_email_verification_link, user.email, token

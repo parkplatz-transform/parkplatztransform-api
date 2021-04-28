@@ -1,6 +1,8 @@
-from pydantic import BaseModel, EmailStr, StrictBool, validator
+from typing import Optional
 
-from ..strings import validation
+from pydantic import BaseModel, EmailStr, StrictBool, validator, root_validator
+
+from app.strings import validation
 
 
 class UserBase(BaseModel):
@@ -13,11 +15,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     accepted_terms_and_conditions: StrictBool
 
-    @validator("accepted_terms_and_conditions")
+    @validator("accepted_terms_and_conditions", pre=True, always=True)
     def must_accept_terms(cls, v):
-        if not v:
-            raise ValueError(validation["must_accept_terms"])
-        return v
+        if v is True:
+            return v
+        raise ValueError(validation["must_accept_terms"])
 
 
 class User(UserBase):
