@@ -4,7 +4,7 @@ COPY ./requirements.txt /app/requirements.txt
 
 RUN \
  apk add --no-cache postgresql-libs geos && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ apk add --no-cache --virtual .build-deps gcc g++ musl-dev postgresql-dev && \
  python3 -m pip install --quiet -r /app/requirements.txt --no-cache-dir && \
  apk --purge del .build-deps
 

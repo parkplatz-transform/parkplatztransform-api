@@ -44,6 +44,7 @@ def get_segments(
     if bbox:
         polygon = from_shape(Polygon(bbox), srid=4326)
         segments = segments.filter(polygon.ST_Intersects(Segment.geometry))
+
     collection = list(map(lambda feat: serialize_segment(feat), segments))
     return schemas.SegmentCollection(features=collection)
 

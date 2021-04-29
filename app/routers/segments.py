@@ -21,7 +21,7 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
     "/segments/",
     response_model=schemas.SegmentCollection,
 )
-async def read_segments(
+def read_segments(
     bbox: Optional[str] = None,
     modified_after: Optional[str] = None,
     details: bool = True,

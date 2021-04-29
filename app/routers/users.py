@@ -61,7 +61,7 @@ async def verify_magic_link(
 
 
 @router.get("/users/me/", response_model=schemas.User)
-async def get_logged_in_user(
+def get_logged_in_user(
     session: Optional[schemas.UserBase] = Depends(get_session),
 ):
     return session
