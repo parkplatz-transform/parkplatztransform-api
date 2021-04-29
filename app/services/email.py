@@ -17,15 +17,15 @@ class EmailService:
                 "from": "ParkplatzTransform noreply@mg.xtransform.org",
                 "to": [email],
                 "subject": "Verifizierung deiner E-Mail-Adresse erforderlich",
-                "text": """
-                Hallo lieber PTler,
-                um dich einzuloggen, klicke bitte auf diesen Link:
-                {self.base_url}/users/verify/?code={token}&email={email}
+                "text": f"""
+Hallo lieber PTler,
+um dich einzuloggen, klicke bitte auf diesen Link:
+{self.base_url}/users/verify/?code={token}&email={email}
 
-                Viel Erfolg!
+Viel Erfolg!
 
-                PS: Entwickler klicken während der Entwicklung hier:
-                http://localhost:3000/users/verify/?code={token}&email={email}&dev=true
+PS: Entwickler klicken während der Entwicklung hier:
+http://localhost:3000/users/verify/?code={token}&email={email}&dev=true
                 """,
             },
         )
