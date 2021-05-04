@@ -97,10 +97,56 @@ def test_create_segment():
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 
+def test_create_segment_polygon():
+    data = {
+        "type": "Feature",
+        "properties": {
+            "data_source": "example data source",
+            "further_comments": "extra comments",
+            "subsegments": [
+                {
+                    "parking_allowed": True,
+                    "order_number": 0,
+                    "length_in_meters": 0,
+                    "car_count": 0,
+                    "quality": 1,
+                    "fee": False,
+                    "street_location": "street",
+                    "marked": False,
+                    "alignment": "parallel",
+                    "duration_constraint": False,
+                    "user_restrictions": "handicap",
+                    "time_constraint": False,
+                    "time_constraint_reason": "string",
+                    "no_parking_reasons": [],
+                }
+            ],
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [13.417729139328003, 52.59056764985919],
+                    [13.419644236564636, 52.590919611743644],
+                    [13.419198989868164, 52.5913367480942],
+                    [13.417326807975769, 52.59061001579123],
+                    [13.417729139328003, 52.59056764985919],
+                ]
+            ],
+        },
+    }
+    response = client.post("/segments/", json.dumps(data))
+    assert response.status_code == 200
+    assert response.json()["geometry"]["type"] == data["geometry"]["type"]
+    assert response.json()["properties"]["further_comments"] == "extra comments"
+    assert response.json()["properties"]["data_source"] == "example data source"
+    assert len(response.json()["properties"]["subsegments"]) == 1
+
+
 def test_read_segments_with_options():
     response = client.get("/segments")
     assert response.status_code == 200
-    assert len(response.json()["features"]) == 1
+    assert len(response.json()["features"]) == 2
 
     response = client.get("/segments/?details=0")
     assert response.status_code == 200
