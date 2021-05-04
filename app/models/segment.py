@@ -26,4 +26,4 @@ class Segment(BaseMixin, Base):
         "SubsegmentParking", back_populates="segment", cascade="all, delete"
     )
 
-    geometry = Column(Geometry(geometry_type="LINESTRING", srid=4326), nullable=False)
+    geometry = Column(Geometry(geometry_type="GEOMETRY", srid=4326), nullable=False)

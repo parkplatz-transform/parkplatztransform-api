@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 from sqlalchemy.orm import Session, noload, joinedload
 from sqlalchemy.sql import select
 from geoalchemy2.shape import from_shape, to_shape
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import Polygon, mapping, shape
 
 from .. import schemas
 from ..models import Segment, SubsegmentNonParking, SubsegmentParking
@@ -11,7 +11,7 @@ from ..permissions import user_can_operate
 
 
 def serialize_segment(segment: Segment) -> schemas.Segment:
-    shape = to_shape(segment.geometry)
+    geom = to_shape(segment.geometry)
     return schemas.Segment(
         id=segment.id,
         properties={
@@ -23,8 +23,8 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
             "modified_at": segment.modified_at.isoformat(),
             "created_at": segment.created_at.isoformat(),
         },
-        geometry={"coordinates": shape.coords[:]},
-        bbox=shape.bounds,
+        geometry=mapping(geom),
+        bbox=geom.bounds,
     )
 
 
@@ -72,9 +72,7 @@ def create_subsegments(db: Session, subsegments, segment_id: str):
 def create_segment(
     db: Session, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
-    geometry = from_shape(
-        LineString(coordinates=segment.geometry.coordinates), srid=4326
-    )
+    geometry = from_shape(shape(segment.geometry))
 
     db_segment = Segment()
     db_segment.further_comments = segment.properties.further_comments
@@ -95,9 +93,7 @@ def create_segment(
 def update_segment(
     db: Session, segment_id: str, segment: schemas.SegmentCreate, user: schemas.User
 ) -> schemas.Segment:
-    geometry = from_shape(
-        LineString(coordinates=segment.geometry.coordinates), srid=4326
-    )
+    geometry = from_shape(shape(segment.geometry))
 
     db_segment = db.query(Segment).get(segment_id)
 

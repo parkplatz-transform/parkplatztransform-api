@@ -3,7 +3,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
-from geojson_pydantic.geometries import LineString as PydanticLineString
+from geojson_pydantic.geometries import Geometry
 
 from ..models import (
     Alignment,
@@ -12,10 +12,6 @@ from ..models import (
     NoParkingReason,
     AlternativeUsageReason,
 )
-
-
-class LineString(PydanticLineString):
-    type: str = "LineString"
 
 
 class SubsegmentBase(BaseModel):
@@ -63,7 +59,7 @@ class Properties(BaseModel):
 class Segment(Feature):
     id: str
     properties: Properties
-    geometry: LineString
+    geometry: Geometry
 
     class Config:
         orm_mode = True
@@ -86,7 +82,7 @@ class SegmentBase(BaseModel):
 class SegmentCreate(BaseModel):
     type: str = "Feature"
     properties: Properties
-    geometry: LineString
+    geometry: Geometry
 
 
 class SegmentUpdate(SegmentCreate):
