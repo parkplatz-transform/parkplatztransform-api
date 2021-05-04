@@ -72,7 +72,7 @@ def create_subsegments(db: Session, subsegments, segment_id: str):
 def create_segment(
     db: Session, segment: schemas.SegmentCreate, user_id: str
 ) -> schemas.Segment:
-    geometry = from_shape(shape(segment.geometry))
+    geometry = from_shape(shape(segment.geometry), srid=4326)
 
     db_segment = Segment()
     db_segment.further_comments = segment.properties.further_comments
@@ -93,7 +93,7 @@ def create_segment(
 def update_segment(
     db: Session, segment_id: str, segment: schemas.SegmentCreate, user: schemas.User
 ) -> schemas.Segment:
-    geometry = from_shape(shape(segment.geometry))
+    geometry = from_shape(shape(segment.geometry), srid=4326)
 
     db_segment = db.query(Segment).get(segment_id)
 
