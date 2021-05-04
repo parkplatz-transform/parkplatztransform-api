@@ -137,7 +137,6 @@ def test_create_segment_polygon():
     }
     response = client.post("/segments/", json.dumps(data))
     assert response.status_code == 200
-    # assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert response.json()["properties"]["further_comments"] == "extra comments"
     assert response.json()["properties"]["data_source"] == "example data source"
