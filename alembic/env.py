@@ -16,8 +16,11 @@ sys.path.append(BASE_DIR)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+uri = os.getenv("DATABASE_URL")  # or other relevant config var
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
 config = context.config
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+config.set_main_option("sqlalchemy.url", uri)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -32,6 +35,7 @@ target_metadata = base_mixin.Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def exclude_tables_from_config(config_):
     tables_ = config_.get("tables", None)
     if tables_ is not None:
@@ -39,7 +43,7 @@ def exclude_tables_from_config(config_):
     return tables
 
 
-exclude_tables = exclude_tables_from_config(config.get_section('alembic:exclude'))
+exclude_tables = exclude_tables_from_config(config.get_section("alembic:exclude"))
 
 
 def include_object(object, name, type_, reflected, compare_to):
@@ -47,7 +51,6 @@ def include_object(object, name, type_, reflected, compare_to):
         return False
     else:
         return True
-
 
 
 def run_migrations_offline():
@@ -68,7 +71,7 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_object=include_object
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -92,7 +95,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_object=include_object
+            include_object=include_object,
         )
 
         with context.begin_transaction():
