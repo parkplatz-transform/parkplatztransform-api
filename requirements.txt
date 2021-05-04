@@ -3,7 +3,7 @@ psycopg2-binary==2.8.6
 pydantic==1.8.1
 sqlalchemy==1.4.3
 GeoAlchemy2==0.8.5
-PyJWT==2.1.0
+PyJWT==1.7.1
 python-dotenv==0.17.1
 email-validator==1.1.2
 requests==2.25.1
