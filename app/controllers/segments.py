@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional
 
 from sqlalchemy.orm import Session, noload, joinedload
-from sqlalchemy.sql import select
+from sqlalchemy.sql import select, or_
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import Polygon, mapping, shape
 
@@ -26,6 +26,38 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
         geometry=mapping(geom),
         bbox=geom.bounds,
     )
+
+
+def query_segments(
+    db: Session,
+    bbox: List[Tuple[float, float]],
+    exclude_ids: List[str],
+    include_if_modified_after: Optional[object],
+) -> schemas.SegmentCollection:
+
+    if include_if_modified_after:
+        segment_filter = or_(
+            Segment.id.notin_(exclude_ids),
+            Segment.modified_at > include_if_modified_after,
+        )
+    else:
+        segment_filter = Segment.id.notin_(exclude_ids)
+
+    query = (
+        select(Segment)
+        .where(segment_filter)
+        .options(
+            joinedload(Segment.subsegments_parking),
+            joinedload(Segment.subsegments_non_parking),
+        )
+    )
+    if bbox:
+        polygon = from_shape(Polygon(bbox), srid=4326)
+        query = query.where(polygon.ST_Intersects(Segment.geometry))
+
+    segments = db.execute(query).unique().all() or []
+    collection = list(map(lambda feat: serialize_segment(feat[0]), segments))
+    return schemas.SegmentCollection(features=collection)
 
 
 def get_segments(

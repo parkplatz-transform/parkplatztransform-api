@@ -6,4 +6,5 @@ from .segment import (  # noqa
     SegmentUpdate,
     Subsegment,
     SegmentCollection,
+    SegmentQuery,
 )

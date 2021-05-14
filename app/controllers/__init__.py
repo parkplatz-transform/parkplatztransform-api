@@ -5,4 +5,5 @@ from .segments import (  # noqa
     delete_segment,
     get_segment,
     update_segment,
+    query_segments,
 )

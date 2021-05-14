@@ -87,3 +87,10 @@ class SegmentCreate(BaseModel):
 
 class SegmentUpdate(SegmentCreate):
     properties: Properties
+
+
+class SegmentQuery(BaseModel):
+    bbox: str
+    details: int
+    exclude_ids: List[str]
+    include_if_modified_after: Optional[str]
