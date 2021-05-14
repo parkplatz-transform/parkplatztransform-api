@@ -35,7 +35,7 @@ def query_segments(
     exclude_ids: List[str],
     include_if_modified_after: Optional[datetime],
 ) -> schemas.SegmentCollection:
-
+    polygon = from_shape(Polygon(bbox), srid=4326)
     if include_if_modified_after:
         segment_filter = or_(
             Segment.id.notin_(exclude_ids),
@@ -47,14 +47,12 @@ def query_segments(
     query = (
         select(Segment)
         .where(segment_filter)
+        .where(polygon.ST_Intersects(Segment.geometry))
         .options(
             joinedload(Segment.subsegments_parking),
             joinedload(Segment.subsegments_non_parking),
         )
     )
-    if bbox:
-        polygon = from_shape(Polygon(bbox), srid=4326)
-        query = query.where(polygon.ST_Intersects(Segment.geometry))
 
     segments = db.execute(query).unique().all() or []
     collection = list(map(lambda feat: serialize_segment(feat[0]), segments))
