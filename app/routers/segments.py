@@ -17,13 +17,6 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
     return list(zip(spl[0::2], spl[1::2]))
 
 
-def parse_timestamp(timestamp: Optional[str]) -> datetime:
-    try:
-        return datetime.datetime.fromisoformat(timestamp)
-    except Exception as e:
-        raise HTTPException(400, str(e))
-
-
 @router.post(
     "/query-segments",
     response_model=schemas.SegmentCollection,
@@ -32,8 +25,6 @@ def query_segments(
     body: schemas.SegmentQuery,
     db: Session = Depends(get_db),
 ):
-    if body.include_if_modified_after:
-        body.include_if_modified_after = parse_timestamp(body.include_if_modified_after)
     bbox = parse_bounding_box(body.bbox)
     result = controllers.query_segments(
         db=db,

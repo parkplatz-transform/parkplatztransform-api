@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Tuple, Optional
 
 from sqlalchemy.orm import Session, noload, joinedload
@@ -32,7 +33,7 @@ def query_segments(
     db: Session,
     bbox: List[Tuple[float, float]],
     exclude_ids: List[str],
-    include_if_modified_after: Optional[object],
+    include_if_modified_after: Optional[datetime],
 ) -> schemas.SegmentCollection:
 
     if include_if_modified_after:
@@ -63,7 +64,7 @@ def query_segments(
 def get_segments(
     db: Session,
     bbox: List[Tuple[float, float]] = None,
-    modified_after: Optional[object] = None,
+    modified_after: Optional[datetime] = None,
     details: bool = True,
 ) -> schemas.SegmentCollection:
     query = select(Segment).options(

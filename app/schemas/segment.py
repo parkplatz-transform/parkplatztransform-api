@@ -1,4 +1,5 @@
 from typing import Optional, List
+from datetime import datetime
 
 from pydantic import BaseModel
 from geojson_pydantic.features import Feature
@@ -93,4 +94,4 @@ class SegmentQuery(BaseModel):
     bbox: str
     details: int
     exclude_ids: List[str]
-    include_if_modified_after: Optional[str]
+    include_if_modified_after: Optional[datetime]
