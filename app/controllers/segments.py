@@ -11,15 +11,16 @@ from ..models import Segment, SubsegmentNonParking, SubsegmentParking
 from ..permissions import user_can_operate
 
 
-def serialize_segment(segment: Segment) -> schemas.Segment:
+def serialize_segment(segment: Segment, details: bool = True) -> schemas.Segment:
     geom = to_shape(segment.geometry)
+    subsegments = segment.subsegments_parking + segment.subsegments_non_parking
     return schemas.Segment(
         id=segment.id,
         properties={
             "further_comments": segment.further_comments,
             "data_source": segment.data_source,
-            "subsegments": segment.subsegments_parking
-            + segment.subsegments_non_parking,
+            "has_subsegments": True if len(subsegments) else False,
+            "subsegments": subsegments if details else [],
             "owner_id": segment.owner_id,
             "modified_at": segment.modified_at.isoformat(),
             "created_at": segment.created_at.isoformat(),
@@ -32,8 +33,9 @@ def serialize_segment(segment: Segment) -> schemas.Segment:
 def query_segments(
     db: Session,
     bbox: List[Tuple[float, float]],
-    exclude_ids: List[str],
-    include_if_modified_after: Optional[datetime],
+    details: bool = True,
+    exclude_ids: List[str] = [],
+    include_if_modified_after: Optional[datetime] = None,
 ) -> schemas.SegmentCollection:
     polygon = from_shape(Polygon(bbox), srid=4326)
     if include_if_modified_after:
@@ -55,7 +57,9 @@ def query_segments(
     )
 
     segments = db.execute(query).unique().all() or []
-    collection = list(map(lambda feat: serialize_segment(feat[0]), segments))
+    collection = list(
+        map(lambda feat: serialize_segment(feat[0], details=details), segments)
+    )
     return schemas.SegmentCollection(features=collection)
 
 
@@ -78,7 +82,9 @@ def get_segments(
         query = query.where(polygon.ST_Intersects(Segment.geometry))
 
     segments = db.execute(query).unique().all() or []
-    collection = list(map(lambda feat: serialize_segment(feat[0]), segments))
+    collection = list(
+        map(lambda feat: serialize_segment(feat[0], details=details), segments)
+    )
     return schemas.SegmentCollection(features=collection)
 
 

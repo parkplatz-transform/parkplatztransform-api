@@ -50,6 +50,7 @@ class SubsegmentsBase(BaseModel):
 
 class Properties(BaseModel):
     subsegments: List[Subsegment]
+    has_subsegments: bool
     owner_id: Optional[str]
     data_source: Optional[str]
     further_comments: Optional[str]
@@ -92,6 +93,6 @@ class SegmentUpdate(SegmentCreate):
 
 class SegmentQuery(BaseModel):
     bbox: str
-    details: int
+    details: bool
     exclude_ids: List[str]
     include_if_modified_after: Optional[datetime]

@@ -29,6 +29,7 @@ def query_segments(
     result = controllers.query_segments(
         db=db,
         bbox=bbox,
+        details=body.details,
         exclude_ids=body.exclude_ids,
         include_if_modified_after=body.include_if_modified_after,
     )
