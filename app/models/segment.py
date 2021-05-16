@@ -82,5 +82,7 @@ class Segment(BaseMixin, Base):
             'has_subsegments': True if total else False,
             'further_comments': self.further_comments,
             'data_source': self.data_source,
-            'owner_id': self.owner_id
+            'owner_id': self.owner_id,
+            'created_at': self.created_at.isoformat(),
+            'modified_at': self.modified_at.isoformat(),
         }
