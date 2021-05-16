@@ -1,6 +1,5 @@
 import uuid
 import datetime
-import json
 import pytest
 from unittest.mock import patch
 
@@ -19,6 +18,7 @@ client = TestClient(app)
 OTA = OneTimeAuth()
 email = "testuser@email.com"
 token = OTA.generate_token(email)
+
 
 @pytest.fixture(scope='session')
 def event_loop(request):
@@ -50,11 +50,13 @@ class SessionStorageMock:
 app.dependency_overrides[get_session] = get_session_mock
 app.dependency_overrides[SessionStorage] = SessionStorageMock
 
+
 @pytest.mark.asyncio
 async def test_docs():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.get("/docs")
     assert response.status_code == 200
+
 
 @pytest.mark.asyncio
 async def test_create_user():
@@ -63,6 +65,7 @@ async def test_create_user():
             await ac.get(f"/users/verify/?code={token}&email={email}")
             response = await ac.get("/users/me")
         assert response.status_code == 200
+
 
 @pytest.mark.asyncio
 async def test_create_segment():
@@ -168,7 +171,8 @@ async def test_read_segments_with_options():
         assert response.status_code == 200
         assert response.json()["features"][0]["properties"]["subsegments"] == []
 
-        response = await ac.get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
+        response = await ac\
+            .get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
         assert response.status_code == 200
         assert response.json()["features"] == []
 
