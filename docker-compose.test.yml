@@ -14,7 +14,7 @@ services:
     build: .
     environment:
       SECRET_KEY: "secrettestingkey"
-      DATABASE_URL: "postgresql://postgres:postgres@postgres/postgres"
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/postgres"
     depends_on:
       - postgres
     ports:

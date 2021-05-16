@@ -50,7 +50,7 @@ class SubsegmentsBase(BaseModel):
 
 class Properties(BaseModel):
     subsegments: List[Subsegment]
-    has_subsegments: bool
+    has_subsegments: Optional[bool]
     owner_id: Optional[str]
     data_source: Optional[str]
     further_comments: Optional[str]

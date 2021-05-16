@@ -38,9 +38,9 @@ async def verify_magic_link(
         raise HTTPException(401, validation["unauthorized"])
     decoded = one_time_auth.get_decoded_token(code)
 
-    user = controllers.get_user_by_email(db, email)
+    user = await controllers.get_user_by_email(db, email)
     if not user:
-        user = controllers.create_user(db, schemas.UserBase(email=decoded["sub"]))
+        user = await controllers.create_user(db, schemas.UserBase(email=decoded["sub"]))
 
     session_id = await session_storage.create_session(user)
 

@@ -19,6 +19,7 @@ sys.path.append(BASE_DIR)
 uri = os.getenv("DATABASE_URL")  # or other relevant config var
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
+uri = uri.replace("+asyncpg", "")
 config = context.config
 config.set_main_option("sqlalchemy.url", uri)
 

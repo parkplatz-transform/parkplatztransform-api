@@ -18,15 +18,15 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
 
 
 @router.post(
-    "/query-segments",
+    "/query-segments/",
     response_model=schemas.SegmentCollection,
 )
-def query_segments(
+async def query_segments(
     body: schemas.SegmentQuery,
     db: Session = Depends(get_db),
 ):
     bbox = parse_bounding_box(body.bbox)
-    result = controllers.query_segments(
+    result = await controllers.query_segments(
         db=db,
         bbox=bbox,
         details=body.details,
@@ -40,7 +40,7 @@ def query_segments(
     "/segments/",
     response_model=schemas.SegmentCollection,
 )
-def read_segments(
+async def read_segments(
     bbox: Optional[str] = None,
     modified_after: Optional[str] = None,
     details: bool = True,
@@ -57,18 +57,18 @@ def read_segments(
             assert len(bbox) >= 5
         except Exception:
             raise HTTPException(400, validation["bbox"])
-    db_segments = controllers.get_segments(
+    db_segments = await controllers.get_segments(
         db, bbox=bbox, modified_after=modified_after, details=details
     )
     return db_segments
 
 
 @router.get(
-    "/segments/{segment_id}",
+    "/segments/{segment_id}/",
     response_model=schemas.Segment,
 )
-def read_segment(segment_id: str, db: Session = Depends(get_db)):
-    segment = controllers.get_segment(db=db, segment_id=segment_id)
+async def read_segment(segment_id: str, db: Session = Depends(get_db)):
+    segment = await controllers.get_segment(db=db, segment_id=segment_id)
     if not segment:
         HTTPException(status_code=404)
     return segment
@@ -77,40 +77,40 @@ def read_segment(segment_id: str, db: Session = Depends(get_db)):
 @router.post(
     "/segments/", response_model=schemas.Segment, dependencies=[Depends(get_session)]
 )
-def create_segment(
+async def create_segment(
     segment: schemas.SegmentCreate,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    return controllers.create_segment(db=db, segment=segment, user_id=user.id)
+    return await controllers.create_segment(db=db, segment=segment, user_id=user.id)
 
 
 @router.delete(
-    "/segments/{segment_id}", response_model=str, dependencies=[Depends(get_session)]
+    "/segments/{segment_id}/", response_model=str, dependencies=[Depends(get_session)]
 )
-def delete_segment(
+async def delete_segment(
     segment_id: str,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    result = controllers.delete_segment(db=db, segment_id=segment_id, user=user)
+    result = await controllers.delete_segment(db=db, segment_id=segment_id, user=user)
     if not result:
         HTTPException(status_code=404)
     return segment_id
 
 
 @router.put(
-    "/segments/{segment_id}",
+    "/segments/{segment_id}/",
     response_model=schemas.Segment,
     dependencies=[Depends(get_session)],
 )
-def update_segment(
+async def update_segment(
     segment_id: str,
     segment: schemas.SegmentUpdate,
     db: Session = Depends(get_db),
     user=Depends(get_session),
 ):
-    result = controllers.update_segment(
+    result = await controllers.update_segment(
         db=db, segment_id=segment_id, segment=segment, user=user
     )
     if not result:

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import select
 
 from .. import schemas
 
@@ -9,13 +10,18 @@ def get_user(db: Session, user_id: str) -> User:
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_user_by_email(db: Session, email: str) -> User:
-    return db.query(User).filter(User.email == email).first()
+async def get_user_by_email(db: Session, email: str) -> User:
+    query = await db.execute((
+        select(User)
+        .where(User.email == email)
+    ))
+    return query.scalars().first()
 
 
-def create_user(db: Session, user: schemas.UserBase) -> User:
+async def create_user(db: Session, user: schemas.UserBase) -> User:
     db_user = User(email=user.email)
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.flush()
+    await db.refresh(db_user)
     return db_user

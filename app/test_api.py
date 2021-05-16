@@ -5,6 +5,8 @@ import pytest
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
+import asyncio
 
 from app.main import app
 from app.sessions import get_session, SessionStorage
@@ -17,6 +19,13 @@ client = TestClient(app)
 OTA = OneTimeAuth()
 email = "testuser@email.com"
 token = OTA.generate_token(email)
+
+@pytest.fixture(scope='session')
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 def pytest_namespace():
@@ -41,20 +50,22 @@ class SessionStorageMock:
 app.dependency_overrides[get_session] = get_session_mock
 app.dependency_overrides[SessionStorage] = SessionStorageMock
 
-
-def test_docs():
-    response = client.get("docs")
+@pytest.mark.asyncio
+async def test_docs():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/docs")
     assert response.status_code == 200
 
-
-def test_create_user():
+@pytest.mark.asyncio
+async def test_create_user():
     with patch.object(uuid, "uuid4", side_effect=lambda: user_id):
-        client.get(f"/users/verify/?code={token}&email={email}")
-        response = client.get("/users/me")
+        async with AsyncClient(app=app, base_url="http://test") as ac:
+            await ac.get(f"/users/verify/?code={token}&email={email}")
+            response = await ac.get("/users/me")
         assert response.status_code == 200
 
-
-def test_create_segment():
+@pytest.mark.asyncio
+async def test_create_segment():
     data = {
         "type": "Feature",
         "properties": {
@@ -87,8 +98,9 @@ def test_create_segment():
             "type": "LineString",
         },
     }
-    response = client.post("/segments/", json.dumps(data))
-    pytest.segment_id = response.json()["id"]
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.post("/segments/", json=data)
+        pytest.segment_id = response.json()["id"]
     assert response.status_code == 200
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
@@ -97,7 +109,8 @@ def test_create_segment():
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 
-def test_create_segment_polygon():
+@pytest.mark.asyncio
+async def test_create_segment_polygon():
     data = {
         "type": "Feature",
         "properties": {
@@ -135,7 +148,8 @@ def test_create_segment_polygon():
             ],
         },
     }
-    response = client.post("/segments/", json.dumps(data))
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.post("/segments/", json=data)
     assert response.status_code == 200
     assert response.json()["geometry"]["type"] == data["geometry"]["type"]
     assert response.json()["properties"]["further_comments"] == "extra comments"
@@ -143,29 +157,33 @@ def test_create_segment_polygon():
     assert len(response.json()["properties"]["subsegments"]) == 1
 
 
-def test_read_segments_with_options():
-    response = client.get("/segments")
-    assert response.status_code == 200
-    assert len(response.json()["features"]) == 2
+@pytest.mark.asyncio
+async def test_read_segments_with_options():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/segments")
+        assert response.status_code == 200
+        assert len(response.json()["features"]) == 2
 
-    response = client.get("/segments/?details=0")
-    assert response.status_code == 200
-    assert response.json()["features"][0]["properties"]["subsegments"] == []
+        response = await ac.get("/segments/?details=0")
+        assert response.status_code == 200
+        assert response.json()["features"][0]["properties"]["subsegments"] == []
 
-    response = client.get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
-    assert response.status_code == 200
-    assert response.json()["features"] == []
+        response = await ac.get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
+        assert response.status_code == 200
+        assert response.json()["features"] == []
 
 
-def test_read_segments_with_bbox():
+@pytest.mark.asyncio
+async def test_read_segments_with_bbox():
     # Test inside
-    response = client.get(
-        "/segments/?bbox=13.431708812713623,52.547078621160054,\
-        13.435056209564207,52.547078621160054,\
-        13.435056209564207,52.548370414628614,\
-        13.431708812713623,52.548370414628614,\
-        13.431708812713623,52.547078621160054"
-    )
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get(
+            "/segments/?bbox=13.431708812713623,52.547078621160054,\
+            13.435056209564207,52.547078621160054,\
+            13.435056209564207,52.548370414628614,\
+            13.431708812713623,52.548370414628614,\
+            13.431708812713623,52.547078621160054"
+        )
     assert response.status_code == 200
     assert len(response.json()["features"]) == 1
     assert response.json()["features"][0]["geometry"]["coordinates"] == [
@@ -174,13 +192,14 @@ def test_read_segments_with_bbox():
     ]
 
     # Test outside
-    response = client.get(
-        "/segments/?bbox=13.438317775726318,52.546367466104385,\
-        13.450162410736084,52.546367466104385,\
-        13.450162410736084,52.552030289646375,\
-        13.438317775726318,52.552030289646375,\
-        13.438317775726318,52.546367466104385"
-    )
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get(
+            "/segments/?bbox=13.438317775726318,52.546367466104385,\
+            13.450162410736084,52.546367466104385,\
+            13.450162410736084,52.552030289646375,\
+            13.438317775726318,52.552030289646375,\
+            13.438317775726318,52.546367466104385"
+        )
     assert response.status_code == 200
     assert response.json() == {
         "bbox": None,
@@ -189,8 +208,10 @@ def test_read_segments_with_bbox():
     }
 
 
-def test_read_segment():
-    response = client.get(f"/segments/{pytest.segment_id}")
+@pytest.mark.asyncio
+async def test_read_segment():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get(f"/segments/{pytest.segment_id}/")
     assert response.status_code == 200
     assert response.json()["id"] == pytest.segment_id
     assert response.json()["geometry"]["coordinates"] == [
@@ -199,7 +220,8 @@ def test_read_segment():
     ]
 
 
-def test_update_segment():
+@pytest.mark.asyncio
+async def test_update_segment():
     data = {
         "type": "Feature",
         "properties": {
@@ -251,7 +273,8 @@ def test_update_segment():
             "type": "LineString",
         },
     }
-    response = client.put(f"/segments/{pytest.segment_id}", json.dumps(data))
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.put(f"/segments/{pytest.segment_id}/", json=data)
     assert response.status_code == 200
     assert response.json()["id"] == pytest.segment_id
     assert response.json()["geometry"]["coordinates"] == data["geometry"]["coordinates"]
@@ -274,6 +297,8 @@ def test_update_segment():
     ]
 
 
-def test_delete_segment():
-    response = client.delete(f"/segments/{pytest.segment_id}")
+@pytest.mark.asyncio
+async def test_delete_segment():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.delete(f"/segments/{pytest.segment_id}/")
     assert response.status_code == 200
