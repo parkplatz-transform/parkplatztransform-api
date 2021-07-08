@@ -1,6 +1,7 @@
 from typing import Optional, List
 from datetime import datetime
 
+import orjson
 from pydantic import BaseModel
 from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
@@ -13,6 +14,10 @@ from ..models import (
     NoParkingReason,
     AlternativeUsageReason,
 )
+
+
+def orjson_dumps(v, *, default):
+    return orjson.dumps(v, default=default).decode()
 
 
 class SubsegmentBase(BaseModel):
@@ -42,6 +47,8 @@ class SubsegmentBase(BaseModel):
 class Subsegment(SubsegmentBase):
     class Config:
         orm_mode = True
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 class SubsegmentsBase(BaseModel):
@@ -65,6 +72,8 @@ class Segment(Feature):
 
     class Config:
         orm_mode = True
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 class SegmentCollection(FeatureCollection):
@@ -79,6 +88,8 @@ class SegmentBase(BaseModel):
 
     class Config:
         orm_mode = True
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 class SegmentCreate(BaseModel):
@@ -96,3 +107,7 @@ class SegmentQuery(BaseModel):
     details: bool
     exclude_ids: List[str]
     include_if_modified_after: Optional[datetime]
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps

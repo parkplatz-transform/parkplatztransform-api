@@ -3,11 +3,13 @@ from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.responses import ORJSONResponse
 
 from app import schemas, controllers
 from app.services import get_db
 from app.strings import validation
 from app.sessions import get_session
+from app.profiled import profiled
 
 router = APIRouter()
 
@@ -19,7 +21,7 @@ def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
 
 @router.post(
     "/query-segments/",
-    response_model=schemas.SegmentCollection,
+    response_class=ORJSONResponse,
 )
 async def query_segments(
     body: schemas.SegmentQuery,
@@ -33,7 +35,8 @@ async def query_segments(
         exclude_ids=body.exclude_ids,
         include_if_modified_after=body.include_if_modified_after,
     )
-    return result
+    with profiled():
+        return {"features": result}
 
 
 @router.get(

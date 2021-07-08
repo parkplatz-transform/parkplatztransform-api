@@ -1,12 +1,8 @@
-FROM python:3.9-alpine3.12
+FROM python:3.9-slim
 
 COPY ./requirements.txt /app/requirements.txt
 
-RUN \
- apk add --no-cache postgresql-libs geos && \
- apk add --no-cache --virtual .build-deps gcc g++ musl-dev postgresql-dev && \
- python3 -m pip install --quiet -r /app/requirements.txt --no-cache-dir && \
- apk --purge del .build-deps
+RUN python3 -m pip install --quiet -r /app/requirements.txt --no-cache-dir
 
 COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh

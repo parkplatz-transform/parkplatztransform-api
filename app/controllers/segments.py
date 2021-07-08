@@ -19,7 +19,7 @@ async def query_segments(
     details: bool = True,
     exclude_ids: List[str] = [],
     include_if_modified_after: Optional[datetime] = None,
-) -> schemas.SegmentCollection:
+) -> List[Segment]:
     polygon = from_shape(Polygon(bbox), srid=4326)
     if include_if_modified_after:
         segment_filter = or_(
@@ -29,24 +29,23 @@ async def query_segments(
     else:
         segment_filter = Segment.id.notin_(exclude_ids)
 
-    query = await db.execute((
-        select(Segment)
-        .where(segment_filter)
-        .where(polygon.ST_Intersects(Segment._geometry))
-        .options(
-            noload(Segment.subsegments_parking if not details else None),
-            noload(Segment.subsegments_non_parking if not details else None),
+    query = await db.execute(
+        (
+            select(Segment.as_geojson_feature)
+            .where(segment_filter)
+            .where(polygon.ST_Intersects(Segment._geometry))
+            .options(
+                noload(Segment.subsegments_parking if not details else None),
+                noload(Segment.subsegments_non_parking if not details else None),
+            )
         )
-    ))
+    )
     segments = query.scalars().all()
-    return {'features': segments}
+    return segments
 
 
 async def get_segment(db: Session, segment_id: str):
-    query = await db.execute((
-        select(Segment)
-        .where(Segment.id == segment_id)
-    ))
+    query = await db.execute((select(Segment).where(Segment.id == segment_id)))
     segment = query.scalars().first()
     return segment
 
@@ -142,7 +141,7 @@ async def update_segment(
         data_source=segment.properties.data_source,
         further_comments=segment.properties.further_comments,
         # Always changes to the last user who edited the segment
-        owner_id=user.id
+        owner_id=user.id,
     )
     await db.execute(query)
     await db.commit()

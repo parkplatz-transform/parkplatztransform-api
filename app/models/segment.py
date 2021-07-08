@@ -1,4 +1,5 @@
 import uuid
+
 from app.models.subsegment import SubsegmentNonParking, SubsegmentParking
 from sqlalchemy import (
     Column,
@@ -32,45 +33,45 @@ class Segment(BaseMixin, Base):
         "SubsegmentNonParking",
         back_populates="segment",
         cascade="all, delete",
-        lazy='joined'
+        lazy="joined",
     )
     subsegments_parking = relationship(
         "SubsegmentParking",
         back_populates="segment",
         cascade="all, delete",
-        lazy='joined'
+        lazy="joined",
     )
 
-    _geometry = Column("geometry", Geometry(
-        geometry_type="GEOMETRY",
-        srid=4326),
-        nullable=False
+    _geometry = Column(
+        "geometry", Geometry(geometry_type="GEOMETRY", srid=4326), nullable=False
     )
 
     # GeoJSON Specific properties
 
     @hybrid_property
+    def geom(self):
+        return to_shape(self._geometry)
+
+    @hybrid_property
     def geometry(self):
-        geom = to_shape(self._geometry)
-        return mapping(geom)
+        return mapping(self.geom)
 
     @hybrid_property
     def bbox(self):
-        geom = to_shape(self._geometry)
-        return geom.bounds
+        return self.geom.bounds
 
     total_non_parking = column_property(
-        select(func.count(SubsegmentNonParking.id)).
-        where(SubsegmentNonParking.segment_id == id).
-        correlate_except(SubsegmentNonParking).
-        scalar_subquery()
+        select(func.count(SubsegmentNonParking.id))
+        .where(SubsegmentNonParking.segment_id == id)
+        .correlate_except(SubsegmentNonParking)
+        .scalar_subquery()
     )
 
     total_parking = column_property(
-        select(func.count(SubsegmentParking.id)).
-        where(SubsegmentParking.segment_id == id).
-        correlate_except(SubsegmentParking).
-        scalar_subquery()
+        select(func.count(SubsegmentParking.id))
+        .where(SubsegmentParking.segment_id == id)
+        .correlate_except(SubsegmentParking)
+        .scalar_subquery()
     )
 
     @hybrid_property
@@ -78,11 +79,20 @@ class Segment(BaseMixin, Base):
         subsegments = self.subsegments_parking + self.subsegments_non_parking
         total = self.total_non_parking + self.total_parking
         return {
-            'subsegments': subsegments,
-            'has_subsegments': True if total else False,
-            'further_comments': self.further_comments,
-            'data_source': self.data_source,
-            'owner_id': self.owner_id,
-            'created_at': self.created_at.isoformat(),
-            'modified_at': self.modified_at.isoformat(),
+            "subsegments": subsegments,
+            "has_subsegments": True if total else False,
+            "further_comments": self.further_comments,
+            "data_source": self.data_source,
+            "owner_id": self.owner_id,
+            "created_at": self.created_at.isoformat(),
+            "modified_at": self.modified_at.isoformat(),
+        }
+
+    @hybrid_property
+    def as_geojson_feature(self):
+        return {
+            "properties": self.properties,
+            "bbox": self.bbox,
+            "id": self.id,
+            "geometry": self.geometry,
         }
