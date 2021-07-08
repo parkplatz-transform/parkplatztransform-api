@@ -13,6 +13,7 @@ from app.services import redis_cache
 
 origins = [
     "https://app.xtransform.org",
+    "https://staging.app.xtransform.org",
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:8023",
