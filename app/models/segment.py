@@ -22,7 +22,9 @@ class Segment(BaseMixin, Base):
 
     id = Column(UUID, default=lambda: uuid.uuid4().hex, primary_key=True, index=True)
 
-    owner_id = Column("owner_id", UUID, ForeignKey("users.id"), nullable=False)
+    owner_id = Column(
+        "owner_id", UUID, ForeignKey("users.id"), nullable=False, index=True
+    )
     owner = relationship("User", back_populates="segments")
 
     further_comments = Column(Text)
@@ -32,19 +34,19 @@ class Segment(BaseMixin, Base):
         "SubsegmentNonParking",
         back_populates="segment",
         cascade="all, delete",
-        lazy='joined'
+        lazy="joined",
     )
     subsegments_parking = relationship(
         "SubsegmentParking",
         back_populates="segment",
         cascade="all, delete",
-        lazy='joined'
+        lazy="joined",
     )
 
-    _geometry = Column("geometry", Geometry(
-        geometry_type="GEOMETRY",
-        srid=4326),
-        nullable=False
+    _geometry = Column(
+        "geometry",
+        Geometry(geometry_type="GEOMETRY", srid=4326, spatial_index=True),
+        nullable=False,
     )
 
     # GeoJSON Specific properties
@@ -60,17 +62,17 @@ class Segment(BaseMixin, Base):
         return geom.bounds
 
     total_non_parking = column_property(
-        select(func.count(SubsegmentNonParking.id)).
-        where(SubsegmentNonParking.segment_id == id).
-        correlate_except(SubsegmentNonParking).
-        scalar_subquery()
+        select(func.count(SubsegmentNonParking.id))
+        .where(SubsegmentNonParking.segment_id == id)
+        .correlate_except(SubsegmentNonParking)
+        .scalar_subquery()
     )
 
     total_parking = column_property(
-        select(func.count(SubsegmentParking.id)).
-        where(SubsegmentParking.segment_id == id).
-        correlate_except(SubsegmentParking).
-        scalar_subquery()
+        select(func.count(SubsegmentParking.id))
+        .where(SubsegmentParking.segment_id == id)
+        .correlate_except(SubsegmentParking)
+        .scalar_subquery()
     )
 
     @hybrid_property
@@ -78,11 +80,11 @@ class Segment(BaseMixin, Base):
         subsegments = self.subsegments_parking + self.subsegments_non_parking
         total = self.total_non_parking + self.total_parking
         return {
-            'subsegments': subsegments,
-            'has_subsegments': True if total else False,
-            'further_comments': self.further_comments,
-            'data_source': self.data_source,
-            'owner_id': self.owner_id,
-            'created_at': self.created_at.isoformat(),
-            'modified_at': self.modified_at.isoformat(),
+            "subsegments": subsegments,
+            "has_subsegments": True if total else False,
+            "further_comments": self.further_comments,
+            "data_source": self.data_source,
+            "owner_id": self.owner_id,
+            "created_at": self.created_at.isoformat(),
+            "modified_at": self.modified_at.isoformat(),
         }
