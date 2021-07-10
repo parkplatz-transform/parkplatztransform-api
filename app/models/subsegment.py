@@ -89,7 +89,7 @@ class SubsegmentNonParking(BaseMixin, Base):
     no_parking_reasons = Column(ARRAY(Enum(NoParkingReason)))
 
     segment_id = Column(
-        UUID, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False
+        UUID, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False, index=True
     )
     segment = relationship("Segment", back_populates="subsegments_non_parking")
 
@@ -142,6 +142,6 @@ class SubsegmentParking(BaseMixin, Base):
     duration_constraint_reason = Column(Text)
 
     segment_id = Column(
-        UUID, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False
+        UUID, ForeignKey("segments.id", ondelete="CASCADE"), nullable=False, index=True
     )
     segment = relationship("Segment", back_populates="subsegments_parking")

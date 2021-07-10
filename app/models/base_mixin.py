@@ -16,4 +16,5 @@ class BaseMixin(object):
         default=datetime.datetime.utcnow,
         onupdate=datetime.datetime.utcnow,
         nullable=False,
+        index=True,
     )
