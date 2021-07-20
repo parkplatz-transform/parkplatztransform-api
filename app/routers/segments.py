@@ -13,8 +13,6 @@ from app.sessions import get_session
 router = APIRouter()
 
 
-
-
 @router.post(
     "/query-segments/",
     response_class=PlainTextResponse,

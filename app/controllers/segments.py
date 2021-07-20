@@ -2,13 +2,10 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 
 from sqlalchemy.orm import Session, joinedload, noload
-from sqlalchemy.sql import or_, text
-from sqlalchemy.sql.expression import bindparam
+from sqlalchemy.sql import text
 from sqlalchemy.future import select
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Polygon, shape
-from sqlalchemy.types import String
-from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import update
 
 from .. import schemas
@@ -44,24 +41,24 @@ async def query_segments(
                 'modified_at', s.modified_at,
                 'created_at', s.created_at,
                 'has_subsegments', (
-                    SELECT count(subsegments_non_parking.id) 
-                    FROM subsegments_non_parking 
+                    SELECT count(subsegments_non_parking.id)
+                    FROM subsegments_non_parking
                     WHERE subsegments_non_parking.segment_id = s.id
                 ) +
                 (
-                    SELECT count(subsegments_parking.id) 
-                    FROM subsegments_parking 
+                    SELECT count(subsegments_parking.id)
+                    FROM subsegments_parking
                     WHERE subsegments_parking.segment_id = s.id) > 0
                 )
             )
         )
-    ) 
-    FROM segments s 
-    WHERE (s.id != any((:exclude_ids)) OR (1 = 1)) 
+    )
+    FROM segments s
+    WHERE (s.id != any((:exclude_ids)) OR (1 = 1))
     AND (s.modified_at > :include_if_modified_after) OR (1 = 1)
     AND ST_Intersects(:bbox, s.geometry);
     """
-    
+
     params = {
         "bbox": bbox,
         "include_if_modified_after": include_if_modified_after,
