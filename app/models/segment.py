@@ -74,7 +74,7 @@ class Segment(BaseMixin, Base):
         .correlate_except(SubsegmentParking)
         .scalar_subquery()
     )
-
+ 
     @hybrid_property
     def properties(self):
         subsegments = self.subsegments_parking + self.subsegments_non_parking

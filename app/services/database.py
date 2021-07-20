@@ -8,7 +8,10 @@ if DATABASE_URL.startswith("postgres://"):
     # Hack - assumes the environment is heroku
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
-engine = create_async_engine(DATABASE_URL, pool_size=20, max_overflow=0, future=True)
+def skip_deserializer(string):
+    return string
+
+engine = create_async_engine(DATABASE_URL, pool_size=20, max_overflow=0, future=True, json_deserializer=skip_deserializer)
 
 SessionLocal = sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession

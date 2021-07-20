@@ -2,6 +2,7 @@ import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from app import schemas, controllers
@@ -12,28 +13,29 @@ from app.sessions import get_session
 router = APIRouter()
 
 
-def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
-    spl = list(map(lambda n: float(n), parameter.split(",")))
-    return list(zip(spl[0::2], spl[1::2]))
 
 
 @router.post(
     "/query-segments/",
-    response_model=schemas.SegmentCollection,
+    response_class=PlainTextResponse,
 )
 async def query_segments(
     body: schemas.SegmentQuery,
     db: Session = Depends(get_db),
 ):
+    def parse_bounding_box(parameter: str) -> str:
+        bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
+        return f"SRID=4326;POLYGON(({bounds}))"
+
     bbox = parse_bounding_box(body.bbox)
     result = await controllers.query_segments(
         db=db,
         bbox=bbox,
-        details=body.details,
         exclude_ids=body.exclude_ids,
         include_if_modified_after=body.include_if_modified_after,
     )
-    return result
+    headers = {"content-type": "application/json"}
+    return PlainTextResponse(content=result, headers=headers)
 
 
 @router.get(
@@ -46,6 +48,10 @@ async def read_segments(
     details: bool = True,
     db: Session = Depends(get_db),
 ):
+    def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
+        spl = list(map(lambda n: float(n), parameter.split(",")))
+        return list(zip(spl[0::2], spl[1::2]))
+
     if modified_after:
         try:
             modified_after = datetime.datetime.fromisoformat(modified_after)

@@ -2,10 +2,13 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 
 from sqlalchemy.orm import Session, joinedload, noload
-from sqlalchemy.sql import or_
+from sqlalchemy.sql import or_, text
+from sqlalchemy.sql.expression import bindparam
 from sqlalchemy.future import select
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Polygon, shape
+from sqlalchemy.types import String
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import update
 
 from .. import schemas
@@ -16,30 +19,57 @@ from ..permissions import user_can_operate
 async def query_segments(
     db: Session,
     bbox: List[Tuple[float, float]],
-    details: bool = True,
     exclude_ids: List[str] = [],
     include_if_modified_after: Optional[datetime] = None,
-) -> schemas.SegmentCollection:
-    polygon = from_shape(Polygon(bbox), srid=4326)
-    if include_if_modified_after:
-        segment_filter = or_(
-            Segment.id.notin_(exclude_ids),
-            Segment.modified_at > include_if_modified_after,
+) -> str:
+    sql = """
+    --begin-sql
+    SELECT json_build_object(
+        'type', 'FeatureCollection',
+        'features', json_agg(
+            json_build_object(
+                'id', s.id,
+                'type', 'Feature',
+                'geometry', ST_AsGeoJSON(geometry)::json,
+                'bbox', json_build_array(
+                    ST_XMin(geometry),
+                    ST_XMax(geometry),
+                    ST_YMin(geometry),
+                    ST_YMax(geometry)
+                ),
+                'properties', json_build_object(
+                'owner_id', s.owner_id,
+                'data_source', s.data_source,
+                'further_comments', s.further_comments,
+                'modified_at', s.modified_at,
+                'created_at', s.created_at,
+                'has_subsegments', (
+                    SELECT count(subsegments_non_parking.id) 
+                    FROM subsegments_non_parking 
+                    WHERE subsegments_non_parking.segment_id = s.id
+                ) +
+                (
+                    SELECT count(subsegments_parking.id) 
+                    FROM subsegments_parking 
+                    WHERE subsegments_parking.segment_id = s.id) > 0
+                )
+            )
         )
-    else:
-        segment_filter = Segment.id.notin_(exclude_ids)
+    ) 
+    FROM segments s 
+    WHERE (s.id != any((:exclude_ids)) OR (1 = 1)) 
+    AND (s.modified_at > :include_if_modified_after) OR (1 = 1)
+    AND ST_Intersects(:bbox, s.geometry);
+    """
+    
+    params = {
+        "bbox": bbox,
+        "include_if_modified_after": include_if_modified_after,
+        "exclude_ids": exclude_ids if len(exclude_ids) > 0 else None
+    }
 
-    query = await db.execute((
-        select(Segment)
-        .where(segment_filter)
-        .where(polygon.ST_Intersects(Segment._geometry))
-        .options(
-            noload(Segment.subsegments_parking if not details else None),
-            noload(Segment.subsegments_non_parking if not details else None),
-        )
-    ))
-    segments = query.scalars().all()
-    return {'features': segments}
+    query = await db.execute(text(sql), params)
+    return query.fetchone()[0]
 
 
 async def get_segment(db: Session, segment_id: str):
