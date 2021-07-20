@@ -40,6 +40,7 @@ async def query_segments(
                 'further_comments', s.further_comments,
                 'modified_at', s.modified_at,
                 'created_at', s.created_at,
+                'subsegments', json_build_array(),
                 'has_subsegments', (
                     SELECT count(subsegments_non_parking.id)
                     FROM subsegments_non_parking
