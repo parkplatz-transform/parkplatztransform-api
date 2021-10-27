@@ -17,6 +17,7 @@ class User(BaseMixin, Base):
     __tablename__ = "users"
 
     email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String, nullable=True)
     segments = relationship("Segment", back_populates="owner")
     permission_level = Column(
         Integer, default=access_levels.get("guest"), nullable=False

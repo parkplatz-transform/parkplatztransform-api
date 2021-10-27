@@ -1,7 +1,8 @@
+import json
 import datetime
 from typing import List, Optional, Tuple
 
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, WebSocket
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,9 @@ from app.sessions import get_session
 
 router = APIRouter()
 
+def parse_bounding_box(parameter: str) -> str:
+        bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
+        return f"SRID=4326;POLYGON(({bounds}))"
 
 @router.post(
     "/query-segments/",
@@ -21,10 +25,6 @@ async def query_segments(
     body: schemas.SegmentQuery,
     db: Session = Depends(get_db),
 ):
-    def parse_bounding_box(parameter: str) -> str:
-        bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
-        return f"SRID=4326;POLYGON(({bounds}))"
-
     bbox = parse_bounding_box(body.bbox)
     result = await controllers.query_segments(
         db=db,
@@ -34,6 +34,24 @@ async def query_segments(
     )
     headers = {"content-type": "application/json"}
     return PlainTextResponse(content=result, headers=headers)
+
+
+@router.websocket("/ws")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    db: Session = Depends(get_db),
+):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        j = json.loads(data)
+        bbox = parse_bounding_box(j['bbox'])
+        result = await controllers.query_segments(
+            db=db,
+            bbox=bbox,
+            exclude_ids=j['exclude_ids'],
+        )
+        await websocket.send_text(result)
 
 
 @router.get(
