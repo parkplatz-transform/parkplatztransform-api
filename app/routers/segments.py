@@ -13,9 +13,11 @@ from app.sessions import get_session
 
 router = APIRouter()
 
+
 def parse_bounding_box(parameter: str) -> str:
-        bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
-        return f"SRID=4326;POLYGON(({bounds}))"
+    bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
+    return f"SRID=4326;POLYGON(({bounds}))"
+
 
 @router.post(
     "/query-segments/",
