@@ -42,14 +42,14 @@ async def query_segments(
                 'created_at', s.created_at,
                 'subsegments', json_build_array(),
                 'has_subsegments', (
-                    SELECT subsegments_non_parking.id
+                    SELECT count(subsegments_non_parking.id)
                     FROM subsegments_non_parking
                     WHERE subsegments_non_parking.segment_id = s.id
-                ) != NULL AND
+                ) +
                 (
-                    SELECT subsegments_parking.id
+                    SELECT count(subsegments_parking.id)
                     FROM subsegments_parking
-                    WHERE subsegments_parking.segment_id = s.id) != NULL
+                    WHERE subsegments_parking.segment_id = s.id) > 0
                 )
             )
         )

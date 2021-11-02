@@ -45,14 +45,14 @@ async def websocket_endpoint(
 ):
     await websocket.accept()
     while True:
-        data = await websocket.receive_text()
-        j = json.loads(data)
-        bbox = parse_bounding_box(j['bbox'])
+        data = await websocket.receive_json()
+        bbox = parse_bounding_box(data['bbox'])
         result = await controllers.query_segments(
             db=db,
             bbox=bbox,
-            exclude_ids=j['exclude_ids'],
+            exclude_ids=data['exclude_ids'],
         )
+
         await websocket.send_text(result)
 
 
