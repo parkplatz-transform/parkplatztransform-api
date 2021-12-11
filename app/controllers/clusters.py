@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
 
-async def fetch_clusters(
+async def get_clusters(
     db: Session,
     bbox: List[Tuple[float, float]]
 ) -> str:
