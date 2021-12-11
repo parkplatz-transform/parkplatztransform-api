@@ -10,7 +10,10 @@ count_sql = """
     FROM subsegments_parking
     WHERE subsegments_parking.segment_id = segments.id))
     FROM segments
-    WHERE ST_Intersects(ST_GeomFromGeoJSON(:polygon), segments.geometry)
+    WHERE ST_Intersects(
+        ST_SetSRID(ST_GeomFromGeoJSON(:polygon), 4326), 
+        segments.geometry
+    )
     --end-sql
 """
 
