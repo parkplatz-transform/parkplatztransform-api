@@ -27,7 +27,7 @@ async def query_segments(
             json_build_object(
                 'id', s.id,
                 'type', 'Feature',
-                'geometry', geometry,
+                'geometry', ST_AsGeoJSON(geometry)::json,
                 'bbox', json_build_array(
                     ST_XMin(geometry),
                     ST_XMax(geometry),
