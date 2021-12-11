@@ -2,12 +2,6 @@ from typing import List, Tuple
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sqlalchemy.future import select
-from geoalchemy2.shape import from_shape
-from shapely.geometry import Polygon
-
-from .. import schemas
-from ..models import Cluster
 
 
 async def fetch_clusters(
