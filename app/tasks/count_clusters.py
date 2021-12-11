@@ -49,3 +49,4 @@ async def count_clusters():
                         'id': uuid.uuid4().hex
                     }
                 )
+        await conn.close()
