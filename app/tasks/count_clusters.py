@@ -21,7 +21,7 @@ count_sql = """
 insert_sql = """
     --begin-sql
     INSERT INTO clusters (count, geometry, id, name)
-    VALUES (:count, :polygon, :id, :name)
+    VALUES (:count, ST_SetSRID(ST_GeomFromGeoJSON(:polygon), 4326), :id, :name)
     --end-sql
 """
 
