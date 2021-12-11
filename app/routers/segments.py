@@ -33,7 +33,7 @@ async def query_segments(
         exclude_ids=body.exclude_ids,
         include_if_modified_after=body.include_if_modified_after,
     )
-    headers = {"content-type": "application/json"}
+    headers = headers = {"content-type": "application/json"}
     return PlainTextResponse(content=result, headers=headers)
 
 

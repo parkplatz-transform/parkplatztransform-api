@@ -27,7 +27,7 @@ async def query_segments(
             json_build_object(
                 'id', s.id,
                 'type', 'Feature',
-                'geometry', ST_AsGeoJSON(geometry)::json,
+                'geometry', geometry,
                 'bbox', json_build_array(
                     ST_XMin(geometry),
                     ST_XMax(geometry),
@@ -42,14 +42,9 @@ async def query_segments(
                 'created_at', s.created_at,
                 'subsegments', json_build_array(),
                 'has_subsegments', (
-                    SELECT count(subsegments_non_parking.id)
-                    FROM subsegments_non_parking
-                    WHERE subsegments_non_parking.segment_id = s.id
-                ) +
-                (
-                    SELECT count(subsegments_parking.id)
-                    FROM subsegments_parking
-                    WHERE subsegments_parking.segment_id = s.id) > 0
+                        EXISTS(SELECT id FROM subsegments_non_parking WHERE subsegments_non_parking.segment_id = s.id limit 1) OR
+	                    EXISTS(SELECT id FROM subsegments_parking WHERE subsegments_parking.segment_id = s.id limit 1)
+                    )
                 )
             )
         )

@@ -1,12 +1,14 @@
 from sentry_sdk import init
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from fastapi.middleware.gzip import GZipMiddleware
+
+from brotli_asgi import BrotliMiddleware
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
 from app.app import app
-from app.routers import segments, users
+from app.routers import segments, users, clusters
 from app.config import settings
 from app.services import redis_cache
 
@@ -40,9 +42,10 @@ openapi_schema = get_openapi(
     routes=app.routes,
 )
 
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(BrotliMiddleware)
 app.include_router(users.router)
 app.include_router(segments.router)
+app.include_router(clusters.router)
 
 
 @app.on_event("startup")

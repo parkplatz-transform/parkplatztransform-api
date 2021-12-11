@@ -7,3 +7,4 @@ from .segments import (  # noqa
     update_segment,
     query_segments,
 )
+from .clusters import get_clusters, fetch_clusters #noqa

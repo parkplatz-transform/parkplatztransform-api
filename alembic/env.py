@@ -9,6 +9,7 @@ from alembic import context
 from app.models import base_mixin
 from app.models import Segment, SubsegmentParking, SubsegmentNonParking
 from app.models.user import User
+from app.models import Cluster
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
