@@ -16,7 +16,7 @@ async def get_clusters(
             json_build_object(
                 'id', c.id,
                 'type', 'Feature',
-                'geometry', geometry,
+                'geometry', ST_AsGeoJSON(geometry)::json,
                 'bbox', json_build_array(
                     ST_XMin(geometry),
                     ST_XMax(geometry),
