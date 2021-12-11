@@ -1,4 +1,4 @@
-from .cluster import Cluster
+from .cluster import Cluster # noqa
 from .user import User, access_levels  # noqa
 from .segment import Segment  # noqa
 from .subsegment import (  # noqa

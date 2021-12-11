@@ -1,17 +1,17 @@
-import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
-from app import schemas, controllers
+from app import controllers
 from app.services import get_db
 from app.strings import validation
 from app.tasks import count_clusters
 
 
 router = APIRouter()
+
 
 @router.get(
     "/clusters/",

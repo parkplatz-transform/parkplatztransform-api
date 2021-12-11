@@ -37,7 +37,7 @@ class Cluster(Base):
     def bbox(self):
         geom = to_shape(self._geometry)
         return geom.bounds
-    
+
     @hybrid_property
     def properties(self):
         return {

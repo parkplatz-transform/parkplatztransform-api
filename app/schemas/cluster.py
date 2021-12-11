@@ -5,9 +5,11 @@ from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Geometry
 
+
 class Properties(BaseModel):
     name: str
     count: int = 0
+
 
 class Cluster(Feature):
     id: str

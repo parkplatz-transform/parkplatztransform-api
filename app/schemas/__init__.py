@@ -8,7 +8,4 @@ from .segment import (  # noqa
     SegmentCollection,
     SegmentQuery,
 )
-from .cluster import (
-    Cluster,
-    ClusterCollection
-) #noqa
+from .cluster import Cluster, ClusterCollection # noqa

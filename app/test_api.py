@@ -63,7 +63,7 @@ async def test_create_user():
     with patch.object(uuid, "uuid4", side_effect=lambda: user_id):
         async with AsyncClient(app=app, base_url="http://test") as ac:
             await ac.get(f"/users/verify/?code={token}&email={email}")
-            response = await ac.get("/users/me")
+            response = await ac.get("/users/me/")
         assert response.status_code == 200
 
 
@@ -163,7 +163,7 @@ async def test_create_segment_polygon():
 @pytest.mark.asyncio
 async def test_read_segments_with_options():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/segments")
+        response = await ac.get("/segments/")
         assert response.status_code == 200
         assert len(response.json()["features"]) == 2
 
@@ -305,4 +305,11 @@ async def test_update_segment():
 async def test_delete_segment():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.delete(f"/segments/{pytest.segment_id}/")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_clusters():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/clusters/")
     assert response.status_code == 200

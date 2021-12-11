@@ -1,1 +1,1 @@
-from .count_clusters import count_clusters #noqa
+from .count_clusters import count_clusters  # noqa

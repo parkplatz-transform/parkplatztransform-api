@@ -9,6 +9,7 @@ from shapely.geometry import Polygon
 from .. import schemas
 from ..models import Cluster
 
+
 async def fetch_clusters(
     db: Session,
     bbox: List[Tuple[float, float]]
@@ -31,7 +32,7 @@ async def fetch_clusters(
                 'properties', json_build_object(
                   'name', c.name,
                   'label', '~' || c.count || ' ' || 'Parkplatz'
-	            )
+                )
             )
         )
     ) FROM clusters c WHERE c.count > 0;
@@ -43,6 +44,7 @@ async def fetch_clusters(
 
     query = await db.execute(text(sql), params)
     return query.fetchone()[0]
+
 
 async def get_clusters(
     db: Session,
