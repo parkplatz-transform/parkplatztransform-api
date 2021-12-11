@@ -44,17 +44,3 @@ async def fetch_clusters(
 
     query = await db.execute(text(sql), params)
     return query.fetchone()[0]
-
-
-async def get_clusters(
-    db: Session,
-    bbox: List[Tuple[float, float]] = None,
-) -> schemas.ClusterCollection:
-    query = select(Cluster)
-    if bbox:
-        polygon = from_shape(Polygon(bbox), srid=4326)
-        query = query.where(polygon.ST_Intersects(Cluster.geometry))
-
-    results = await db.execute(query)
-    clusters = results.scalars().all() or []
-    return schemas.ClusterCollection(features=clusters)
