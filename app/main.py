@@ -10,7 +10,6 @@ from fastapi.openapi.utils import get_openapi
 from app.app import app
 from app.routers import segments, users, clusters
 from app.config import settings
-from app.services import redis_cache
 
 
 origins = [
@@ -46,11 +45,6 @@ app.add_middleware(BrotliMiddleware)
 app.include_router(users.router)
 app.include_router(segments.router)
 app.include_router(clusters.router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    await redis_cache.init_cache()
 
 
 if settings.sentry_url:

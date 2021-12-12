@@ -32,11 +32,17 @@ async def read_clusters(
         except Exception:
             raise HTTPException(400, validation["bbox"])
     clusters = await controllers.get_clusters(db, bbox=bbox)
-    headers = {"cache-control": "max-age=3600", "content-type": "application/json"}
+    headers = {
+        "cache-control": "max-age=3600",
+        "content-type": "application/json"
+    }
     return PlainTextResponse(content=clusters, headers=headers)
 
 
-@router.get("/clusters/count/", response_class=PlainTextResponse)
-def count_clusters_task(background_tasks: BackgroundTasks):
-    background_tasks.add_task(count_clusters)
-    return PlainTextResponse(content="OK")
+@router.get("/clusters/count/")
+async def count_clusters_task(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    background_tasks.add_task(count_clusters, db)
+    return {"message": "Begun cluster count"}

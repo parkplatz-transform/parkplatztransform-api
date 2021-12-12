@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app import schemas, controllers
 from app.services import get_db
 from app.strings import validation
-from app.sessions import get_session
+from app.routers.users import get_session
 
 router = APIRouter()
 
@@ -98,25 +98,34 @@ async def read_segment(segment_id: str, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/segments/", response_model=schemas.Segment, dependencies=[Depends(get_session)]
+    "/segments/",
+    response_model=schemas.Segment,
+    dependencies=[Depends(get_session)]
 )
 async def create_segment(
     segment: schemas.SegmentCreate,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    return await controllers.create_segment(db=db, segment=segment, user_id=user.id)
+    return await controllers.create_segment(
+        db=db, segment=segment,
+        user_id=user.id
+    )
 
 
 @router.delete(
-    "/segments/{segment_id}/", response_model=str, dependencies=[Depends(get_session)]
+    "/segments/{segment_id}/",
+    response_model=str,
+    dependencies=[Depends(get_session)]
 )
 async def delete_segment(
     segment_id: str,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    result = await controllers.delete_segment(db=db, segment_id=segment_id, user=user)
+    result = await controllers.delete_segment(
+        db=db, segment_id=segment_id, user=user
+    )
     if not result:
         HTTPException(status_code=404)
     return segment_id

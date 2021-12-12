@@ -19,6 +19,7 @@ engine = create_async_engine(
     pool_size=20,
     max_overflow=0,
     future=True,
+    # echo=True,
     json_deserializer=skip_deserializer
 )
 

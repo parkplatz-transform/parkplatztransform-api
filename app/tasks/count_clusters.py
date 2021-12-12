@@ -1,7 +1,9 @@
 import json
 import uuid
+import time
 
-from app.services import engine
+from sqlalchemy.orm.session import Session
+
 from sqlalchemy.sql import text
 
 count_sql = """
@@ -26,27 +28,31 @@ insert_sql = """
 """
 
 
-async def count_clusters():
-    async with engine.begin() as conn:
-        with open('app/tasks/berlin_ortsteile.geojson') as json_file:
-            await conn.execute(
-                text('DELETE FROM clusters')
+async def count_clusters(db=Session):
+    start = time.time()
+    with open('app/tasks/berlin_ortsteile.geojson') as json_file:
+        await db.execute(
+            text('DELETE FROM clusters')
+        )
+        data = json.load(json_file)
+        clusters = []
+        for feature in data['features']:
+            geom = json.dumps(feature['geometry'])
+            name = feature['properties']['name']
+            count_result = await db.execute(
+                text(count_sql), {'polygon': geom}
             )
-            data = json.load(json_file)
-            for feature in data['features']:
-                geom = json.dumps(feature['geometry'])
-                name = feature['properties']['name']
-                count_result = await conn.execute(
-                    text(count_sql), {'polygon': geom}
-                )
-                count = count_result.fetchone()[0]
-                await conn.execute(
-                    text(insert_sql),
-                    {
-                        'polygon': geom,
-                        'count': count,
-                        'name': name,
-                        'id': uuid.uuid4().hex
-                    }
-                )
-        await conn.close()
+            count = count_result.fetchone()[0]
+            clusters.append({
+                'polygon': geom,
+                'count': count,
+                'name': name,
+                'id': uuid.uuid4().hex
+            })
+        await db.execute(
+            text(insert_sql),
+            clusters
+        )
+        await db.commit()
+        end = time.time()
+        print(f"Finished cluster count in {end - start}")

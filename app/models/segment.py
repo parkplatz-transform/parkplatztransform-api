@@ -45,7 +45,7 @@ class Segment(BaseMixin, Base):
 
     _geometry = Column(
         "geometry",
-        Geometry(geometry_type="GEOMETRY", srid=4326, spatial_index=False),
+        Geometry(geometry_type="GEOMETRY", srid=4326, spatial_index=True),
         nullable=False
     )
 
