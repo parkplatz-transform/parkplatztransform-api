@@ -8,7 +8,7 @@ from sqlalchemy.sql import text
 
 count_sql = """
     --begin-sql
-    SELECT count((SELECT count(subsegments_parking.car_count)
+    SELECT sum((SELECT count(subsegments_parking.car_count)
     FROM subsegments_parking
     WHERE subsegments_parking.segment_id = segments.id))
     FROM segments
