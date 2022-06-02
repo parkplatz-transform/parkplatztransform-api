@@ -1,5 +1,6 @@
 import datetime
 from typing import List, Optional, Tuple
+from hashlib import md5
 
 from fastapi import Depends, APIRouter, HTTPException, WebSocket, Request, Response
 from fastapi.responses import PlainTextResponse
@@ -94,21 +95,13 @@ async def read_segment(
     segment_id: str, request: Request, response: Response, db: Session = Depends(get_db)
 ):
     segment = await controllers.get_segment(db=db, segment_id=segment_id)
-    last_updated_pattern = "%a, %d %b %Y %H:%M:%S GMT"
-    last_modified = datetime.datetime.fromisoformat(
-        segment.properties["modified_at"]
-    ).replace(microsecond=0)
 
-    if request.headers.get("if-modified-since"):
-        if_modified = datetime.datetime.strptime(
-            request.headers.get("if-modified-since"), last_updated_pattern
-        )
-        if if_modified == last_modified:
-            return Response(status_code=304)
+    new_etag = md5(segment.properties["modified_at"].encode()).hexdigest()
 
-    response.headers["Last-Modified"] = last_modified.strftime(last_updated_pattern)
-    response.headers["Cache-Control"] = "max-age=0, must-revalidate"
-    response.headers["Expires"] = "-1"
+    if request.headers.get("if-none-match") == new_etag:
+        return Response(status_code=304)
+
+    response.headers["ETag"] = new_etag
 
     if not segment:
         HTTPException(status_code=404)
