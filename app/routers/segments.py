@@ -106,7 +106,9 @@ async def read_segment(
         if if_modified == last_modified:
             return Response(status_code=304)
 
-    response.headers["last-modified"] = last_modified.strftime(last_updated_pattern)
+    response.headers["Last-Modified"] = last_modified.strftime(last_updated_pattern)
+    response.headers["Cache-Control"] = "max-age=0, must-revalidate"
+    response.headers["Expires"] = "-1"
 
     if not segment:
         HTTPException(status_code=404)
