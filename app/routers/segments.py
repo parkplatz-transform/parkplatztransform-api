@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional, Tuple
 
-from fastapi import Depends, APIRouter, HTTPException, WebSocket
+from fastapi import Depends, APIRouter, HTTPException, WebSocket, Request, Response
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
@@ -45,11 +45,11 @@ async def websocket_endpoint(
     await websocket.accept()
     while True:
         data = await websocket.receive_json()
-        bbox = parse_bounding_box(data['bbox'])
+        bbox = parse_bounding_box(data["bbox"])
         result = await controllers.query_segments(
             db=db,
             bbox=bbox,
-            exclude_ids=data['exclude_ids'],
+            exclude_ids=data["exclude_ids"],
         )
 
         await websocket.send_text(result)
@@ -90,42 +90,49 @@ async def read_segments(
     "/segments/{segment_id}/",
     response_model=schemas.Segment,
 )
-async def read_segment(segment_id: str, db: Session = Depends(get_db)):
+async def read_segment(
+    segment_id: str, request: Request, response: Response, db: Session = Depends(get_db)
+):
     segment = await controllers.get_segment(db=db, segment_id=segment_id)
+    last_updated_pattern = "%a, %d %b %Y %H:%M:%S GMT"
+    last_modified = datetime.datetime.fromisoformat(
+        segment.properties["modified_at"]
+    ).replace(microsecond=0)
+
+    if request.headers.get("if-modified-since"):
+        if_modified = datetime.datetime.strptime(
+            request.headers.get("if-modified-since"), last_updated_pattern
+        )
+        if if_modified == last_modified:
+            return Response(status_code=304)
+
+    response.headers["last-modified"] = last_modified.strftime(last_updated_pattern)
+
     if not segment:
         HTTPException(status_code=404)
     return segment
 
 
 @router.post(
-    "/segments/",
-    response_model=schemas.Segment,
-    dependencies=[Depends(get_session)]
+    "/segments/", response_model=schemas.Segment, dependencies=[Depends(get_session)]
 )
 async def create_segment(
     segment: schemas.SegmentCreate,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    return await controllers.create_segment(
-        db=db, segment=segment,
-        user_id=user.id
-    )
+    return await controllers.create_segment(db=db, segment=segment, user_id=user.id)
 
 
 @router.delete(
-    "/segments/{segment_id}/",
-    response_model=str,
-    dependencies=[Depends(get_session)]
+    "/segments/{segment_id}/", response_model=str, dependencies=[Depends(get_session)]
 )
 async def delete_segment(
     segment_id: str,
     db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    result = await controllers.delete_segment(
-        db=db, segment_id=segment_id, user=user
-    )
+    result = await controllers.delete_segment(db=db, segment_id=segment_id, user=user)
     if not result:
         HTTPException(status_code=404)
     return segment_id
