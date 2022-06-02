@@ -8,7 +8,7 @@ from httpx import AsyncClient
 import asyncio
 
 from app.main import app
-from app.sessions import get_session, SessionStorage
+from app.routers.users import get_session
 from app.schemas import User
 from app.services import OneTimeAuth
 
@@ -20,7 +20,7 @@ email = "testuser@email.com"
 token = OTA.generate_token(email)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -42,13 +42,13 @@ def get_session_mock():
     return User(id=user_id.hex, email=email, permission_level=1)
 
 
-class SessionStorageMock:
-    async def create_session(self, user: User):
-        return {}
+# class SessionStorageMock:
+#     async def create_session(self, user: User):
+#         return {}
 
 
 app.dependency_overrides[get_session] = get_session_mock
-app.dependency_overrides[SessionStorage] = SessionStorageMock
+# app.dependency_overrides[SessionStorage] = SessionStorageMock
 
 
 @pytest.mark.asyncio
@@ -171,8 +171,9 @@ async def test_read_segments_with_options():
         assert response.status_code == 200
         assert response.json()["features"][0]["properties"]["subsegments"] == []
 
-        response = await ac\
-            .get(f"/segments/?modified_after={datetime.datetime.utcnow()}")
+        response = await ac.get(
+            f"/segments/?modified_after={datetime.datetime.utcnow()}"
+        )
         assert response.status_code == 200
         assert response.json()["features"] == []
 
