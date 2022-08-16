@@ -80,7 +80,7 @@ class Segment(BaseMixin, Base):
         subsegments = self.subsegments_parking + self.subsegments_non_parking
         total = self.total_non_parking + self.total_parking
         return {
-            "subsegments": subsegments,
+            "subsegments": subsegments.sort(key=lambda x: x.order_number, reverse=True),
             "has_subsegments": True if total else False,
             "further_comments": self.further_comments,
             "data_source": self.data_source,
