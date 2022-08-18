@@ -1,51 +1,57 @@
-from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import delete, select
+from uuid import uuid4
+from datetime import datetime
 
-from .. import schemas
+from ..services import db
 
-from ..models import User, UserSession
-
-
-def get_user(db: Session, user_id: str) -> User:
-    return db.query(User).filter(User.id == user_id).first()
+user_collection = db['users']
+session_collection = db['sessions']
 
 
-async def get_user_by_email(db: Session, email: str) -> User:
-    query = await db.execute((
-        select(User)
-        .where(User.email == email)
-    ))
-    return query.scalars().first()
+async def get_user(user_id: str) -> dict:
+    user = await db.user_collection.find_one({'_id': user_id})
+    user['id'] = user['_id']
+    return user
 
 
-async def create_user(db: Session, user: schemas.UserBase) -> User:
-    db_user = User(email=user.email)
-    db.add(db_user)
-    await db.commit()
-    await db.flush()
-    await db.refresh(db_user)
-    return db_user
+async def get_user_by_email(email: str) -> dict:
+    print(email)
+    user = await user_collection.find_one({'email': email})
+    if user is not None:
+        user['id'] = user['_id']
+    return user
 
 
-async def create_session(db: Session, user_id: str) -> str:
-    db_session = UserSession(user_id=user_id)
-    db.add(db_session)
-    await db.commit()
-    return db_session.id
+async def create_user(email: str) -> dict:
+    user = {}
+    user['_id'] = str(uuid4())
+    user['permission_level'] = 0
+    user['created_at'] = datetime.now()
+    user['modified_at'] = datetime.now()
+    user['email'] = email
+    result = await user_collection.insert_one(user)
+    if result.acknowledged is True:
+        user['id'] = user['_id']
+        return user
 
 
-async def get_logged_in_user(db: Session, session_id: str) -> schemas.User:
-    query = await db.execute(
-        select(User)
-        .join(User.sessions)
-        .where(UserSession.id == session_id)
-    )
-    return query.scalars().first()
+async def create_session(user_id: str) -> str:
+    session = {}
+    session['_id'] = str(uuid4())
+    session['owner_id'] = user_id
+    result = await session_collection.insert_one(session)
+    if result.acknowledged is True:
+        return session['_id']
 
 
-async def clear_session(db: Session, session_id: str):
-    await db.execute(
-        delete(UserSession)
-        .where(UserSession.id == session_id)
-    )
+async def get_logged_in_user(session_id: str) -> dict:
+    session = await session_collection.find_one({'_id': session_id})
+    if session is None:
+        return None
+    user = await user_collection.find_one({'_id': session['owner_id']})
+    print(user)
+    return user
+
+
+async def clear_session(session_id: str):
+    await session_collection.delete_one({'_id': session_id})
     return session_id

@@ -1,12 +1,10 @@
-FROM python:3.9-alpine3.12
+FROM python:3.9
 
 COPY ./requirements.txt /app/requirements.txt
 
 RUN \
- apk add --no-cache postgresql-libs geos && \
- apk add --no-cache --virtual .build-deps gcc g++ musl-dev postgresql-dev && \
- python3 -m pip install --quiet -r /app/requirements.txt --no-cache-dir && \
- apk --purge del .build-deps
+ apt-get update && apt-get install -y libgeos-dev && \
+ python3 -m pip install --quiet -r /app/requirements.txt --no-cache-dir
 
 COPY ./app /app
 

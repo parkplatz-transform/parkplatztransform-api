@@ -1,5 +1,6 @@
 from typing import Optional, List
-from datetime import datetime
+from datetime import date, datetime
+from uuid import uuid4
 
 from pydantic import BaseModel
 from geojson_pydantic.features import Feature
@@ -54,8 +55,8 @@ class Properties(BaseModel):
     owner_id: Optional[str]
     data_source: Optional[str]
     further_comments: Optional[str]
-    modified_at: Optional[str]
-    created_at: Optional[str]
+    modified_at: Optional[datetime]
+    created_at: Optional[datetime]
 
 
 class Segment(Feature):
@@ -82,6 +83,7 @@ class SegmentBase(BaseModel):
 
 
 class SegmentCreate(BaseModel):
+    _id: uuid4 = uuid4()
     type: str = "Feature"
     properties: Properties
     geometry: Geometry
@@ -92,7 +94,7 @@ class SegmentUpdate(SegmentCreate):
 
 
 class SegmentQuery(BaseModel):
-    bbox: str
+    bbox: List[List[float]]
     details: bool
     exclude_ids: List[str]
     include_if_modified_after: Optional[datetime]

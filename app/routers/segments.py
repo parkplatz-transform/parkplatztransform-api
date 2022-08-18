@@ -3,20 +3,13 @@ from typing import List, Optional, Tuple
 from hashlib import md5
 
 from fastapi import Depends, APIRouter, HTTPException, WebSocket, Request, Response
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, ORJSONResponse
 from sqlalchemy.orm import Session
 
 from app import schemas, controllers
-from app.services import get_db
-from app.strings import validation
 from app.routers.users import get_session
 
 router = APIRouter()
-
-
-def parse_bounding_box(parameter: str) -> str:
-    bounds = ",".join(" ".join(s) for s in zip(*[iter(parameter.split(","))] * 2))
-    return f"SRID=4326;POLYGON(({bounds}))"
 
 
 @router.post(
@@ -25,28 +18,24 @@ def parse_bounding_box(parameter: str) -> str:
 )
 async def query_segments(
     body: schemas.SegmentQuery,
-    db: Session = Depends(get_db),
 ):
-    bbox = parse_bounding_box(body.bbox)
+
     result = await controllers.query_segments(
-        db=db,
-        bbox=bbox,
+        bbox=body.bbox,
         exclude_ids=body.exclude_ids,
         include_if_modified_after=body.include_if_modified_after,
     )
-    headers = headers = {"content-type": "application/json"}
-    return PlainTextResponse(content=result, headers=headers)
+    return ORJSONResponse(content=result)
 
 
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    db: Session = Depends(get_db),
 ):
     await websocket.accept()
     while True:
         data = await websocket.receive_json()
-        bbox = parse_bounding_box(data["bbox"])
+        bbox = data["bbox"]
         result = await controllers.query_segments(
             db=db,
             bbox=bbox,
@@ -58,33 +47,11 @@ async def websocket_endpoint(
 
 @router.get(
     "/segments/",
-    response_model=schemas.SegmentCollection,
+    response_class=ORJSONResponse,
 )
-async def read_segments(
-    bbox: Optional[str] = None,
-    modified_after: Optional[str] = None,
-    details: bool = True,
-    db: Session = Depends(get_db),
-):
-    def parse_bounding_box(parameter: str) -> List[Tuple[float, float]]:
-        spl = list(map(lambda n: float(n), parameter.split(",")))
-        return list(zip(spl[0::2], spl[1::2]))
-
-    if modified_after:
-        try:
-            modified_after = datetime.datetime.fromisoformat(modified_after)
-        except Exception as e:
-            raise HTTPException(400, str(e))
-    if bbox:
-        try:
-            bbox = parse_bounding_box(bbox)
-            assert len(bbox) >= 5
-        except Exception:
-            raise HTTPException(400, validation["bbox"])
-    db_segments = await controllers.get_segments(
-        db, bbox=bbox, modified_after=modified_after, details=details
-    )
-    return db_segments
+async def read_segments():
+    db_segments = await controllers.get_segments()
+    return ORJSONResponse(content=db_segments)
 
 
 @router.get(
@@ -92,16 +59,16 @@ async def read_segments(
     response_model=schemas.Segment,
 )
 async def read_segment(
-    segment_id: str, request: Request, response: Response, db: Session = Depends(get_db)
+    segment_id: str, request: Request, response: ORJSONResponse
 ):
-    segment = await controllers.get_segment(db=db, segment_id=segment_id)
+    segment = await controllers.get_segment(segment_id=segment_id)
 
-    new_etag = md5(segment.properties["modified_at"].encode()).hexdigest()
+    # new_etag = md5(segment["properties"]["modified_at"].encode()).hexdigest()
 
-    if request.headers.get("if-none-match") == new_etag:
-        return Response(status_code=304)
+    # if request.headers.get("if-none-match") == new_etag:
+    #     return Response(status_code=304)
 
-    response.headers["ETag"] = new_etag
+    # response.headers["ETag"] = new_etag
 
     if not segment:
         HTTPException(status_code=404)
@@ -109,14 +76,13 @@ async def read_segment(
 
 
 @router.post(
-    "/segments/", response_model=schemas.Segment, dependencies=[Depends(get_session)]
+    "/segments/", response_class=ORJSONResponse, dependencies=[Depends(get_session)]
 )
 async def create_segment(
-    segment: schemas.SegmentCreate,
-    db: Session = Depends(get_db),
+    segment: dict,
     user: schemas.User = Depends(get_session),
 ):
-    return await controllers.create_segment(db=db, segment=segment, user_id=user.id)
+    return await controllers.create_segment(segment=segment, user_id=user.id)
 
 
 @router.delete(
@@ -124,10 +90,9 @@ async def create_segment(
 )
 async def delete_segment(
     segment_id: str,
-    db: Session = Depends(get_db),
     user: schemas.User = Depends(get_session),
 ):
-    result = await controllers.delete_segment(db=db, segment_id=segment_id, user=user)
+    result = await controllers.delete_segment(segment_id=segment_id, user=user)
     if not result:
         HTTPException(status_code=404)
     return segment_id
@@ -135,17 +100,16 @@ async def delete_segment(
 
 @router.put(
     "/segments/{segment_id}/",
-    response_model=schemas.Segment,
+    response_class=ORJSONResponse,
     dependencies=[Depends(get_session)],
 )
 async def update_segment(
     segment_id: str,
-    segment: schemas.SegmentUpdate,
-    db: Session = Depends(get_db),
+    segment: dict,
     user=Depends(get_session),
 ):
     result = await controllers.update_segment(
-        db=db, segment_id=segment_id, segment=segment, user=user
+        segment_id=segment_id, segment=segment, user=user
     )
     if not result:
         HTTPException(status_code=404)
