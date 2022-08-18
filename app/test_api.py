@@ -1,5 +1,4 @@
 import uuid
-import datetime
 import pytest
 from unittest.mock import patch
 
@@ -9,7 +8,6 @@ import asyncio
 
 from app.main import app
 from app.routers.users import get_session
-from app.schemas import User
 from app.services import OneTimeAuth
 
 
@@ -39,7 +37,12 @@ user_id = uuid.UUID("2873b1fb-abc3-4e9d-bfce-a65453fce811")
 
 
 def get_session_mock():
-    return User(id=user_id.hex, email=email, permission_level=1)
+    return {
+        '_id': user_id.hex,
+        'id': user_id.hex,
+        'email': email,
+        'permission_level': 1
+    }
 
 
 # class SessionStorageMock:
@@ -166,51 +169,6 @@ async def test_read_segments_with_options():
         response = await ac.get("/segments/")
         assert response.status_code == 200
         assert len(response.json()["features"]) == 2
-
-        response = await ac.get("/segments/?details=0")
-        assert response.status_code == 200
-        assert response.json()["features"][0]["properties"]["subsegments"] == []
-
-        response = await ac.get(
-            f"/segments/?modified_after={datetime.datetime.utcnow()}"
-        )
-        assert response.status_code == 200
-        assert response.json()["features"] == []
-
-
-@pytest.mark.asyncio
-async def test_read_segments_with_bbox():
-    # Test inside
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get(
-            "/segments/?bbox=13.431708812713623,52.547078621160054,\
-            13.435056209564207,52.547078621160054,\
-            13.435056209564207,52.548370414628614,\
-            13.431708812713623,52.548370414628614,\
-            13.431708812713623,52.547078621160054"
-        )
-    assert response.status_code == 200
-    assert len(response.json()["features"]) == 1
-    assert response.json()["features"][0]["geometry"]["coordinates"] == [
-        [13.43244105577469, 52.54816979768233],
-        [13.43432933092117, 52.54754673757979],
-    ]
-
-    # Test outside
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get(
-            "/segments/?bbox=13.438317775726318,52.546367466104385,\
-            13.450162410736084,52.546367466104385,\
-            13.450162410736084,52.552030289646375,\
-            13.438317775726318,52.552030289646375,\
-            13.438317775726318,52.546367466104385"
-        )
-    assert response.status_code == 200
-    assert response.json() == {
-        "bbox": None,
-        "features": [],
-        "type": "FeatureCollection",
-    }
 
 
 @pytest.mark.asyncio

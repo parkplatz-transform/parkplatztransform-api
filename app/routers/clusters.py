@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi.responses import PlainTextResponse, ORJSONResponse
+from fastapi.responses import ORJSONResponse
 
 from app import controllers
 

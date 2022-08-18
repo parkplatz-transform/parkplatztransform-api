@@ -1,10 +1,5 @@
-import datetime
-from typing import List, Optional, Tuple
-from hashlib import md5
-
-from fastapi import Depends, APIRouter, HTTPException, WebSocket, Request, Response
+from fastapi import Depends, APIRouter, HTTPException, WebSocket, Request
 from fastapi.responses import PlainTextResponse, ORJSONResponse
-from sqlalchemy.orm import Session
 
 from app import schemas, controllers
 from app.routers.users import get_session
@@ -37,7 +32,6 @@ async def websocket_endpoint(
         data = await websocket.receive_json()
         bbox = data["bbox"]
         result = await controllers.query_segments(
-            db=db,
             bbox=bbox,
             exclude_ids=data["exclude_ids"],
         )
@@ -82,7 +76,7 @@ async def create_segment(
     segment: dict,
     user: schemas.User = Depends(get_session),
 ):
-    return await controllers.create_segment(segment=segment, user_id=user.id)
+    return await controllers.create_segment(segment=segment, user_id=user['id'])
 
 
 @router.delete(

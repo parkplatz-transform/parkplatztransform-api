@@ -1,20 +1,22 @@
 version: "3.8"
 services:
-  postgres:
-    container_name: "postgres"
-    image: "postgis/postgis:13-3.1-alpine"
-    ports:
-      - "5432:5432"
+  mongo:
+    container_name: "mongo"
+    image: mongo
+    restart: always
     environment:
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
   app:
     container_name: "app"
     build: .
     environment:
       SECRET_KEY: "secrettestingkey"
-      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/postgres"
+      MONGO_URL: "mongodb://root:example@mongo:27017/?authMechanism=DEFAULT"
     depends_on:
-      - postgres
+      - mongo
     ports:
       - "8024"
     volumes:

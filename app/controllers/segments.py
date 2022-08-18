@@ -51,7 +51,10 @@ async def get_segments() -> schemas.SegmentCollection:
     features = []
     async for feature in segment_collection.find():
         features.append(feature)
-    return features
+    return {
+        'type': 'FeatureCollection',
+        'features': features
+    }
 
 
 def create_subsegments(subsegments, segment_id: str):
@@ -76,14 +79,14 @@ async def create_segment(
     segment: dict, user_id: str
 ) -> dict:
     segment['_id'] = str(uuid4())
-    segment['properties'] = {}
-    segment['properties']['subsegments'] = []
     segment['properties']['created_at'] = datetime.now()
     segment['properties']['modified_at'] = datetime.now()
     segment['properties']['owner_id'] = user_id
+
     result = await segment_collection.insert_one(segment)
 
     if result.acknowledged is True:
+        segment['id'] = segment['_id']
         return segment
 
 
@@ -91,19 +94,21 @@ async def update_segment(
     segment_id: str, segment: dict, user: schemas.User
 ) -> dict:
     db_segment = await segment_collection.find_one({'_id': segment_id})
-    user_can_operate(user, db_segment.owner_id)
+    user_can_operate(user, db_segment['properties']['owner_id'])
 
-    segment['properties']['owner_id'] = user.id
+    segment['properties']['owner_id'] = user['id']
     await segment_collection.replace_one(
         {'_id': segment_id},
         segment
     )
-    return await segment_collection.find_one({'_id': segment_id})
+    updated_segment = await segment_collection.find_one({'_id': segment_id})
+    updated_segment['id'] = updated_segment['_id']
+    return updated_segment
 
 
 async def delete_segment(segment_id: str, user: schemas.User):
     segment = await segment_collection.find_one({'_id': segment_id})
     # Send a 403 and bail out if the user does not have appropriate permissions
-    user_can_operate(user, segment.owner_id)
+    user_can_operate(user, segment['properties']['owner_id'])
     await segment_collection.delete_one({'_id': segment_id})
     return True
