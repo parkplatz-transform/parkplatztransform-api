@@ -1,14 +1,13 @@
 fastapi==0.70.0
-psycopg2-binary==2.9.2
 asyncpg==0.25.0
 pydantic==1.8.2
-sqlalchemy==1.4.3
+sqlalchemy==1.4.40
 GeoAlchemy2==0.9.4
 PyJWT==1.7.1
 python-dotenv==0.17.1
 email-validator==1.1.2
 requests==2.25.1
-alembic==1.5.8
+alembic==1.8.1
 geojson-pydantic==0.2.2
 shapely==1.7.1
 uvicorn==0.14.0
