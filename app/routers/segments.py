@@ -23,22 +23,6 @@ async def query_segments(
     return ORJSONResponse(content=result)
 
 
-@router.websocket("/ws")
-async def websocket_endpoint(
-    websocket: WebSocket,
-):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_json()
-        bbox = data["bbox"]
-        result = await controllers.query_segments(
-            bbox=bbox,
-            exclude_ids=data["exclude_ids"],
-        )
-
-        await websocket.send_text(result)
-
-
 @router.get(
     "/segments/",
     response_class=ORJSONResponse,
@@ -57,13 +41,6 @@ async def read_segment(
 ):
     segment = await controllers.get_segment(segment_id=segment_id)
 
-    # new_etag = md5(segment["properties"]["modified_at"].encode()).hexdigest()
-
-    # if request.headers.get("if-none-match") == new_etag:
-    #     return Response(status_code=304)
-
-    # response.headers["ETag"] = new_etag
-
     if not segment:
         HTTPException(status_code=404)
     return segment
@@ -74,7 +51,7 @@ async def read_segment(
 )
 async def create_segment(
     segment: dict,
-    user: schemas.User = Depends(get_session),
+    user: dict = Depends(get_session),
 ):
     return await controllers.create_segment(segment=segment, user_id=user['id'])
 

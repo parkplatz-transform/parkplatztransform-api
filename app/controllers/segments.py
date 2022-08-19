@@ -14,7 +14,7 @@ async def query_segments(
     bbox: List[Tuple[float, float]],
     exclude_ids: List[str] = [],
     include_if_modified_after: Optional[datetime] = None,
-) -> str:
+) -> dict:
     features = []
     async for feature in segment_collection.find({
         'geometry': {
@@ -47,7 +47,7 @@ async def get_segment(segment_id: str):
     return segment
 
 
-async def get_segments() -> schemas.SegmentCollection:
+async def get_segments() -> dict:
     features = []
     async for feature in segment_collection.find():
         features.append(feature)

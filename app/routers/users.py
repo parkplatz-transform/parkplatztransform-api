@@ -22,6 +22,7 @@ async def get_session(
             session_id=sessionid
         )
         if user:
+            user['id'] = user['_id']
             return user
         else:
             raise HTTPException(401, validation["unauthorized"])
