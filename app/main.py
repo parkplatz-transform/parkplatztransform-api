@@ -1,6 +1,5 @@
 from sentry_sdk import init
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from brotli_asgi import BrotliMiddleware
 
@@ -48,5 +47,5 @@ app.include_router(clusters.router)
 
 
 if settings.sentry_url:
-    init(dsn=settings.sentry_url, integrations=[SqlalchemyIntegration()])
+    init(dsn=settings.sentry_url)
     app = SentryAsgiMiddleware(app)
