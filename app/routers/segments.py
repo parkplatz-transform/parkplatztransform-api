@@ -3,6 +3,7 @@ from fastapi.responses import PlainTextResponse, ORJSONResponse
 
 from app import schemas, controllers
 from app.routers.users import get_session
+from ..services import db
 
 router = APIRouter()
 

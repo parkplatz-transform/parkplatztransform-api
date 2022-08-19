@@ -3,7 +3,6 @@ from typing import List, Tuple, Optional
 from uuid import uuid4
 
 from .. import schemas
-from ..models import SubsegmentNonParking, SubsegmentParking
 from ..permissions import user_can_operate
 from ..services import db
 
@@ -55,24 +54,6 @@ async def get_segments() -> dict:
         'type': 'FeatureCollection',
         'features': features
     }
-
-
-def create_subsegments(subsegments, segment_id: str):
-    for idx, subsegment in enumerate(subsegments):
-        if subsegment.parking_allowed:
-            db_prop = SubsegmentParking(
-                segment_id=segment_id,
-                subsegment=subsegment,
-                order_number=idx,
-            )
-            db.add(db_prop)
-        else:
-            db_prop = SubsegmentNonParking(
-                segment_id=segment_id,
-                subsegment=subsegment,
-                order_number=idx,
-            )
-            db.add(db_prop)
 
 
 async def create_segment(

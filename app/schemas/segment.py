@@ -1,3 +1,4 @@
+import enum
 from typing import Optional, List
 from datetime import date, datetime
 from uuid import uuid4
@@ -7,13 +8,58 @@ from geojson_pydantic.features import Feature
 from geojson_pydantic.features import FeatureCollection
 from geojson_pydantic.geometries import Geometry
 
-from ..models import (
-    Alignment,
-    StreetLocation,
-    UserRestriction,
-    NoParkingReason,
-    AlternativeUsageReason,
-)
+
+class Alignment(str, enum.Enum):
+    parallel = "parallel"
+    perpendicular = "perpendicular"
+    diagonal = "diagonal"
+
+
+class StreetLocation(str, enum.Enum):
+    street = "street"
+    curb = "curb"
+    sidewalk = "sidewalk"
+    parking_bay = "parking_bay"
+    middle = "middle"
+    car_park = "car_park"
+
+
+class UserRestriction(str, enum.Enum):
+    all_users = "all_users"
+    handicap = "handicap"
+    residents = "residents"
+    car_sharing = "car_sharing"
+    gender = "gender"
+    electric_cars = "electric_cars"
+    other = "other"
+
+
+class NoParkingReason(str, enum.Enum):
+    private_parking = "private_parking"
+    bus_stop = "bus_stop"
+    bus_lane = "bus_lane"
+    taxi = "taxi"
+    tree = "tree"
+    bike_racks = "bike_racks"
+    pedestrian_crossing = "pedestrian_crossing"
+    pedestrian_zone = "pedestrian_zone"
+    driveway = "driveway"
+    loading_zone = "loading_zone"
+    standing_zone = "standing_zone"
+    emergency_exit = "emergency_exit"
+    lowered_curb_side = "lowered_curb_side"
+    no_stopping = "no_stopping"
+    lane = "lane"
+
+
+class AlternativeUsageReason(str, enum.Enum):
+    bus_stop = "bus_stop"
+    bus_lane = "bus_lane"
+    market = "market"
+    lane = "lane"
+    taxi = "taxi"
+    loading = "loading"
+    other = "other"
 
 
 class SubsegmentBase(BaseModel):
